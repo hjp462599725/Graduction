@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="hps.itf.mapper.ItfServiceHeaderMapper">
+	<resultMap type="hps.itf.dto.ItfServiceHeader" id="BaseResult"
+		extends="com.hand.hap.mapper.StdMapper.STD">
+		<id column="SERVICE_HEADER_ID" property="serviceHeaderId" jdbcType="DECIMAL" />
+		<result column="SERVICE_CODE" property="serviceCode" jdbcType="VARCHAR" />
+		<result column="SERVICE_TYPE" property="serviceType" jdbcType="VARCHAR" />
+		<result column="BODY_HEADER" property="bodyHeader" jdbcType="VARCHAR" />
+		<result column="BODY_TAIL" property="bodyTail" jdbcType="VARCHAR" />
+		<result column="NAMESPACE" property="namespace" jdbcType="VARCHAR" />
+		<result column="DOMAIN_URL" property="domainUrl" jdbcType="VARCHAR" />
+		<result column="REQUEST_FORMAT" property="requestFormat"
+			jdbcType="VARCHAR" />
+		<result column="REQUEST_CONTENTTYPE" property="requestContenttype"
+			jdbcType="VARCHAR" />
+		<result column="REQUEST_ACCEPT" property="requestAccept"
+			jdbcType="VARCHAR" />
+		<result column="AUTH_FLAG" property="authFlag" jdbcType="VARCHAR" />
+		<result column="AUTH_USERNAME" property="authUsername"
+			jdbcType="VARCHAR" />
+		<result column="AUTH_PASSWORD" property="authPassword"
+			jdbcType="VARCHAR" />
+		<result column="ENABLE_FLAG" property="enableFlag" jdbcType="VARCHAR" />
+		<result column="MEANNING" property="meanning" jdbcType="VARCHAR" />
+		<result column="DESCRIPTION" property="description" jdbcType="VARCHAR" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		SERVICE_HEADER_ID,SERVICE_CODE,SERVICE_TYPE,BODY_HEADER,BODY_TAIL,NAMESPACE,DOMAIN_URL,REQUEST_FORMAT
+		REQUEST_CONTENTTYPE,REQUEST_ACCEPT,AUTH_FLAG,AUTH_USERNAME,AUTH_PASSWORD,ENABLE_FLAG,MEANNING,DESCRIPTION
+	</sql>
+	
+	<select id="selectAllHeader" resultMap="BaseResult">
+		SELECT b.service_header_id,
+		       b.service_code,
+		       b.service_type,
+		       b.body_header,
+		       b.body_tail,
+		       b.namespace,
+		       b.domain_url,
+		       b.request_format,
+		       b.request_contenttype,
+		       b.request_accept,
+		       b.auth_flag,
+		       b.auth_username,
+		       b.auth_password,
+		       b.enable_flag,
+		       t.meanning,
+		       t.description
+		  FROM hps_itf_service_headers_b b
+		  LEFT OUTER JOIN hps_itf_service_headers_tl t
+		    ON (b.service_header_id = t.service_header_id AND 
+		    t.lang = #{request.locale,jdbcType=VARCHAR,javaType=java.lang.String})
+	</select>
+	
+	<select id="selectByCodeAndEnableFlag" parameterType="hps.itf.dto.ItfServiceHeader" 
+	resultMap="BaseResult">
+		SELECT b.service_header_id,
+		       b.service_code,
+		       b.service_type,
+		       b.body_header,
+		       b.body_tail,
+		       b.namespace,
+		       b.domain_url,
+		       b.request_format,
+		       b.request_contenttype,
+		       b.request_accept,
+		       b.auth_flag,
+		       b.auth_username,
+		       b.auth_password,
+		       b.enable_flag,
+		       t.meanning,
+		       t.description
+		  FROM hps_itf_service_headers_b b
+		  LEFT OUTER JOIN hps_itf_service_headers_tl t
+		    ON (b.service_header_id = t.service_header_id AND 
+		    t.lang = #{request.locale,jdbcType=VARCHAR,javaType=java.lang.String})
+		    <where>
+				<if test="serviceCode != null"> AND b.service_code =
+					#{serviceCode,javaType=java.lang.String}
+				</if>
+				<if test="enableFlag != null"> AND b.enable_flag =
+					#{enableFlag,javaType=java.lang.String}
+				</if>
+			</where>
+			ORDER BY b.service_header_id
+	</select>
+
+	<insert id="insertHeader" parameterType="hps.itf.dto.ItfServiceHeader">
+		<selectKey resultType="Long" keyProperty="serviceHeaderId"
+			order="BEFORE">
+			select
+			HPS_ITF_SERVICE_HEADERS_B_S.nextVal
+			from dual
+		</selectKey>
+		<bind name="serviceHeaderId_cache" value="serviceHeaderId" />
+		INSERT INTO HPS_ITF_SERVICE_HEADERS_B
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="requestId != null">REQUEST_ID,</if>
+			<if test="programId != null">PROGRAM_ID,</if>
+			<if test="objectVersionNumber != null">OBJECT_VERSION_NUMBER,</if>
+			<if test="createdBy != null">CREATED_BY,</if>
+			<if test="creationDate != null">CREATION_DATE,</if>
+			<if test="lastUpdatedBy != null">LAST_UPDATED_BY,</if>
+			<if test="lastUpdateDate != null">LAST_UPDATE_DATE,</if>
+			<if test="lastUpdateLogin != null">LAST_UPDATE_LOGIN,</if>
+			<if test="attributeCategory != null">ATTRIBUTE_CATEGORY,</if>
+			<if test="attribute1 != null">ATTRIBUTE1,</if>
+			<if test="attribute2 != null">ATTRIBUTE2,</if>
+			<if test="attribute3 != null">ATTRIBUTE3,</if>
+			<if test="attribute4 != null">ATTRIBUTE4,</if>
+			<if test="attribute5 != null">ATTRIBUTE5,</if>
+			<if test="attribute6 != null">ATTRIBUTE6,</if>
+			<if test="attribute7 != null">ATTRIBUTE7,</if>
+			<if test="attribute8 != null">ATTRIBUTE8,</if>
+			<if test="attribute9 != null">ATTRIBUTE9,</if>
+			<if test="attribute10 != null">ATTRIBUTE10,</if>
+			<if test="attribute11 != null">ATTRIBUTE11,</if>
+			<if test="attribute12 != null">ATTRIBUTE12,</if>
+			<if test="attribute13 != null">ATTRIBUTE13,</if>
+			<if test="attribute14 != null">ATTRIBUTE14,</if>
+			<if test="attribute15 != null">ATTRIBUTE15,</if>
+			SERVICE_HEADER_ID,
+			<if test="serviceCode != null">SERVICE_CODE,</if>
+			<if test="serviceType != null">SERVICE_TYPE,</if>
+			<if test="bodyHeader != null">BODY_HEADER,</if>
+			<if test="bodyTail != null">BODY_TAIL,</if>
+			<if test="namespace != null">NAMESPACE,</if>
+			<if test="domainUrl != null">DOMAIN_URL,</if>
+			<if test="requestFormat != null">REQUEST_FORMAT,</if>
+			<if test="requestContenttype != null">REQUEST_CONTENTTYPE,</if>
+			<if test="requestAccept != null">REQUEST_ACCEPT,</if>
+			<if test="authFlag != null">AUTH_FLAG,</if>
+			<if test="authUsername != null">AUTH_USERNAME,</if>
+			<if test="authPassword != null">AUTH_PASSWORD,</if>
+			<if test="enableFlag != null">ENABLE_FLAG,</if>
+			<if test="meanning != null">MEANNING,</if>
+			<if test="description != null">DESCRIPTION,</if>
+		</trim>
+		<trim prefix="VALUES(" suffix=")" suffixOverrides=",">
+			<if test="requestId != null">#{requestId,javaType=java.lang.Long},</if>
+			<if test="programId != null">#{programId,javaType=java.lang.Long},</if>
+			<if test="objectVersionNumber != null">#{objectVersionNumber,javaType=java.lang.Long},</if>
+			<if test="createdBy != null">#{request.userId,javaType=java.lang.Long},</if>
+			<if test="creationDate != null">#{creationDate,javaType=java.util.Date},</if>
+			<if test="lastUpdatedBy != null">#{lastUpdatedBy,javaType=java.lang.Long},</if>
+			<if test="lastUpdateDate != null">#{lastUpdateDate,javaType=java.util.Date},</if>
+			<if test="lastUpdateLogin != null">#{request.userId,javaType=java.lang.Long},</if>
+			<if test="attributeCategory != null">#{attributeCategory,javaType=java.lang.String},</if>
+			<if test="attribute1 != null">#{attribute1,javaType=java.lang.String},</if>
+			<if test="attribute2 != null">#{attribute2,javaType=java.lang.String},</if>
+			<if test="attribute3 != null">#{attribute3,javaType=java.lang.String},</if>
+			<if test="attribute4 != null">#{attribute4,javaType=java.lang.String},</if>
+			<if test="attribute5 != null">#{attribute5,javaType=java.lang.String},</if>
+			<if test="attribute6 != null">#{attribute6,javaType=java.lang.String},</if>
+			<if test="attribute7 != null">#{attribute7,javaType=java.lang.String},</if>
+			<if test="attribute8 != null">#{attribute8,javaType=java.lang.String},</if>
+			<if test="attribute9 != null">#{attribute9,javaType=java.lang.String},</if>
+			<if test="attribute10 != null">#{attribute10,javaType=java.lang.String},</if>
+			<if test="attribute11 != null">#{attribute11,javaType=java.lang.String},</if>
+			<if test="attribute12 != null">#{attribute12,javaType=java.lang.String},</if>
+			<if test="attribute13 != null">#{attribute13,javaType=java.lang.String},</if>
+			<if test="attribute14 != null">#{attribute14,javaType=java.lang.String},</if>
+			<if test="attribute15 != null">#{attribute15,javaType=java.lang.String},</if>
+			<if test="serviceHeaderId_cache != null">#{serviceHeaderId_cache,javaType=java.lang.Long},</if>
+			<if test="serviceHeaderId_cache == null">#{serviceHeaderId,javaType=java.lang.Long},</if>
+			<if test="serviceCode != null">#{serviceCode,javaType=java.lang.String},</if>
+			<if test="serviceType != null">#{serviceType,javaType=java.lang.String},</if>
+			<if test="bodyHeader != null">#{bodyHeader,javaType=java.lang.String},</if>
+			<if test="bodyTail != null">#{bodyTail,javaType=java.lang.String},</if>
+			<if test="namespace != null">#{namespace,javaType=java.lang.String},</if>
+			<if test="domainUrl != null">#{domainUrl,javaType=java.lang.String},</if>
+			<if test="requestFormat != null">#{requestFormat,javaType=java.lang.String},</if>
+			<if test="requestContenttype != null">#{requestContenttype,javaType=java.lang.String},</if>
+			<if test="requestAccept != null">#{requestAccept,javaType=java.lang.String},</if>
+			<if test="authFlag != null">#{authFlag,javaType=java.lang.String},</if>
+			<if test="authUsername != null">#{authUsername,javaType=java.lang.String},</if>
+			<if test="authPassword != null">#{authPassword,javaType=java.lang.String},</if>
+			<if test="enableFlag != null">#{enableFlag,javaType=java.lang.String},</if>
+			<if test="meanning != null">#{meanning,javaType=java.lang.String},</if>
+			<if test="description != null">#{description,javaType=java.lang.String},</if>
+		</trim>
+	</insert>
+	<update id="updateHeader" parameterType="hps.itf.dto.ItfServiceHeader">
+		UPDATE HPS_ITF_SERVICE_HEADERS_B
+		<set>
+			<if test="requestId != null">REQUEST_ID = #{requestId,javaType=java.lang.Long},</if>
+			<if test="programId != null">PROGRAM_ID = #{programId,javaType=java.lang.Long},</if>
+			OBJECT_VERSION_NUMBER=OBJECT_VERSION_NUMBER+1,
+			<if test="lastUpdatedBy != null">LAST_UPDATED_BY =
+				#{lastUpdatedBy,javaType=java.lang.Long},</if>
+			LAST_UPDATE_DATE=CURRENT_TIMESTAMP,
+			<if test="lastUpdateLogin != null">LAST_UPDATE_LOGIN =
+				#{lastUpdateLogin,javaType=java.lang.Long},</if>
+			<if test="attributeCategory != null">ATTRIBUTE_CATEGORY =
+				#{attributeCategory,javaType=java.lang.String},</if>
+			<if test="attribute1 != null">ATTRIBUTE1 = #{attribute1,javaType=java.lang.String},
+			</if>
+			<if test="attribute2 != null">ATTRIBUTE2 = #{attribute2,javaType=java.lang.String},
+			</if>
+			<if test="attribute3 != null">ATTRIBUTE3 = #{attribute3,javaType=java.lang.String},
+			</if>
+			<if test="attribute4 != null">ATTRIBUTE4 = #{attribute4,javaType=java.lang.String},
+			</if>
+			<if test="attribute5 != null">ATTRIBUTE5 = #{attribute5,javaType=java.lang.String},
+			</if>
+			<if test="attribute6 != null">ATTRIBUTE6 = #{attribute6,javaType=java.lang.String},
+			</if>
+			<if test="attribute7 != null">ATTRIBUTE7 = #{attribute7,javaType=java.lang.String},
+			</if>
+			<if test="attribute8 != null">ATTRIBUTE8 = #{attribute8,javaType=java.lang.String},
+			</if>
+			<if test="attribute9 != null">ATTRIBUTE9 = #{attribute9,javaType=java.lang.String},
+			</if>
+			<if test="attribute10 != null">ATTRIBUTE10 = #{attribute10,javaType=java.lang.String},
+			</if>
+			<if test="attribute11 != null">ATTRIBUTE11 = #{attribute11,javaType=java.lang.String},
+			</if>
+			<if test="attribute12 != null">ATTRIBUTE12 = #{attribute12,javaType=java.lang.String},
+			</if>
+			<if test="attribute13 != null">ATTRIBUTE13 = #{attribute13,javaType=java.lang.String},
+			</if>
+			<if test="attribute14 != null">ATTRIBUTE14 = #{attribute14,javaType=java.lang.String},
+			</if>
+			<if test="attribute15 != null">ATTRIBUTE15 = #{attribute15,javaType=java.lang.String},
+			</if>
+			<if test="serviceCode != null">SERVICE_CODE = #{serviceCode,javaType=java.lang.String},
+			</if>
+			<if test="serviceType != null">SERVICE_TYPE = #{serviceType,javaType=java.lang.String},
+			</if>
+			<if test="bodyHeader != null">BODY_HEADER = #{bodyHeader,javaType=java.lang.String},
+			</if>
+			<if test="bodyTail != null">BODY_TAIL = #{bodyTail,javaType=java.lang.String},
+			</if>
+			<if test="namespace != null">NAMESPACE = #{namespace,javaType=java.lang.String},</if>
+			<if test="domainUrl != null">DOMAIN_URL = #{domainUrl,javaType=java.lang.String},
+			</if>
+			<if test="requestFormat != null">REQUEST_FORMAT =
+				#{requestFormat,javaType=java.lang.String},
+			</if>
+			<if test="requestContenttype != null">REQUEST_CONTENTTYPE =
+				#{requestContenttype,javaType=java.lang.String},
+			</if>
+			<if test="requestAccept != null">REQUEST_ACCEPT =
+				#{requestAccept,javaType=java.lang.String},
+			</if>
+			<if test="authFlag != null">AUTH_FLAG = 
+				#{authFlag,javaType=java.lang.String},
+			</if>
+			<if test="authUsername != null">AUTH_USERNAME =
+				#{authUsername,javaType=java.lang.String},
+			</if>
+			<if test="authUsername == null">AUTH_USERNAME =
+				null,
+			</if>
+			<if test="authPassword != null">AUTH_PASSWORD =
+				#{authPassword,javaType=java.lang.String},
+			</if>
+			<if test="authPassword == null">AUTH_PASSWORD =
+				null,
+			</if>
+			<if test="enableFlag != null">ENABLE_FLAG = #{enableFlag,javaType=java.lang.String},
+			</if>
+			<if test="meanning != null">MEANNING = #{meanning,javaType=java.lang.String},</if>
+			<if test="description != null">DESCRIPTION = #{description,javaType=java.lang.String},
+			</if>
+		</set>
+		<where> AND SERVICE_HEADER_ID =
+			#{serviceHeaderId,javaType=java.lang.Long}
+		</where>
+	</update>
+</mapper>

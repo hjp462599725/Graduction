@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="hps.fnd.mapper.LookupValueMapper">
+	<resultMap type="hps.fnd.dto.LookupValue" id="BaseResult"
+		extends="com.hand.hap.mapper.StdMapper.STD">
+		<id column="LOOKUP_CODE_ID" property="lookupCodeId" jdbcType="DECIMAL" />
+		<result column="LOOKUP_TYPE_ID" property="lookupTypeId"
+			jdbcType="DECIMAL" />
+		<result column="LOOKUP_TYPE" property="lookupType" jdbcType="VARCHAR" />
+		<result column="LOOKUP_CODE" property="lookupCode" jdbcType="VARCHAR" />
+		<result column="MEANING" property="meaning" jdbcType="VARCHAR" />
+		<result column="DESCRIPTION" property="description" jdbcType="VARCHAR" />
+		<result column="TAG" property="tag" jdbcType="VARCHAR" />
+		<result column="ENABLED_FLAG" property="enabledFlag" jdbcType="VARCHAR" />
+		<result column="START_DATE_ACTIVE" property="startDateActive"
+			jdbcType="TIMESTAMP" />
+		<result column="END_DATE_ACTIVE" property="endDateActive"
+			jdbcType="TIMESTAMP" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		LOOKUP_CODE_ID,LOOKUP_TYPE_ID,LOOKUP_TYPE,LOOKUP_CODE,MEANING,DESCRIPTION,ENABLED_FLAG,START_DATE_ACTIVE,END_DATE_ACTIVE
+	</sql>
+
+	<select id="selectLookupValues" parameterType="hps.fnd.dto.LookupValue"
+		resultMap="BaseResult">
+		SELECT b.LOOKUP_CODE_ID,
+			b.LOOKUP_TYPE_ID,
+			b.LOOKUP_TYPE,
+			b.LOOKUP_CODE,
+			t.MEANING,
+			t.DESCRIPTION,
+			t.TAG,
+			b.ENABLED_FLAG,
+			b.START_DATE_ACTIVE,
+			b.END_DATE_ACTIVE,
+			b.OBJECT_VERSION_NUMBER
+		FROM HPS_FND_LOOKUP_VALUE_B b
+		LEFT OUTER JOIN HPS_FND_LOOKUP_VALUE_TL t
+		ON (b.LOOKUP_CODE_ID = t.LOOKUP_CODE_ID AND t.LANG = #{request.locale,
+		jdbcType = VARCHAR, javaType = java.lang.String})
+		<where>
+			<if test="lookupCodeId != null"> AND b.LOOKUP_CODE_ID =
+				#{lookupCodeId,javaType=java.lang.Long}
+			</if>
+			<if test="lookupTypeId != null"> AND b.LOOKUP_TYPE_ID =
+				#{lookupTypeId,javaType=java.lang.Long}
+			</if>
+			<if test="lookupType != null"> AND b.LOOKUP_TYPE LIKE
+				#{lookupType,javaType=java.lang.String}
+			</if>
+			<if test="lookupCode != null"> AND b.LOOKUP_CODE LIKE
+				#{lookupCode,javaType=java.lang.String}
+			</if>
+			<if test="meaning != null"> AND t.MEANING LIKE
+				#{meaning,javaType=java.lang.String}
+			</if>
+			<if test="description != null"> AND t.DESCRIPTION LIKE
+				#{description,javaType=java.lang.String}
+			</if>
+			<if test="tag != null"> AND t.TAG LIKE
+				#{tag,javaType=java.lang.String}
+			</if>
+			<if test="enabledFlag != null"> AND b.ENABLED_FLAG LIKE
+				#{enabledFlag,javaType=java.lang.String}
+			</if>
+			<if test="startDateActive != null"> AND b.START_DATE_ACTIVE =
+				#{startDateActive,javaType=java.util.Date}
+			</if>
+			<if test="endDateActive != null"> AND b.END_DATE_ACTIVE =
+				#{endDateActive,javaType=java.util.Date}
+			</if>
+		</where>
+		ORDER BY b.LOOKUP_CODE_ID
+	</select>
+	
+	
+	<select id="selectLookupValuesByType" parameterType="hps.fnd.dto.LookupValue"
+		resultMap="BaseResult">
+		SELECT b.LOOKUP_CODE_ID,
+			b.LOOKUP_TYPE_ID,
+			b.LOOKUP_TYPE,
+			b.LOOKUP_CODE,
+			t.MEANING,
+			t.DESCRIPTION,
+			t.TAG,
+			b.ENABLED_FLAG,
+			b.START_DATE_ACTIVE,
+			b.END_DATE_ACTIVE
+		FROM HPS_FND_LOOKUP_VALUE_B b
+		LEFT OUTER JOIN HPS_FND_LOOKUP_VALUE_TL t
+		ON (b.LOOKUP_CODE_ID = t.LOOKUP_CODE_ID AND t.LANG = #{request.locale,
+		jdbcType = VARCHAR, javaType = java.lang.String})
+		<where>
+			<if test="lookupCodeId != null"> AND b.LOOKUP_CODE_ID =
+				#{lookupCodeId,javaType=java.lang.Long}
+			</if>
+			<if test="lookupTypeId != null"> AND b.LOOKUP_TYPE_ID =
+				#{lookupTypeId,javaType=java.lang.Long}
+			</if>
+			<if test="lookupType != null"> AND b.LOOKUP_TYPE =
+				#{lookupType,javaType=java.lang.String}
+			</if>
+			<if test="lookupCode != null"> AND b.LOOKUP_CODE LIKE
+				#{lookupCode,javaType=java.lang.String}
+			</if>
+			<if test="meaning != null"> AND t.MEANING LIKE
+				#{meaning,javaType=java.lang.String}
+			</if>
+			<if test="description != null"> AND t.DESCRIPTION LIKE
+				#{description,javaType=java.lang.String}
+			</if>
+			<if test="tag != null"> AND t.TAG LIKE
+				#{tag,javaType=java.lang.String}
+			</if>
+			and b.ENABLED_FLAG = 'Y'
+			and SYSDATE between
+			nvl(b.START_DATE_ACTIVE,SYSDATE) and nvl(b.END_DATE_ACTIVE,SYSDATE)
+		</where>
+		ORDER BY b.LOOKUP_CODE_ID
+	</select>
+
+	
+	<!-- 公用快码查询方法根据type -->
+	<select id="queryLookupValues" parameterType="hps.fnd.dto.LookupValue"
+		resultMap="BaseResult">
+		SELECT b.LOOKUP_CODE_ID,
+		b.LOOKUP_TYPE_ID,
+		b.LOOKUP_TYPE,
+		b.LOOKUP_CODE,
+		t.MEANING,
+		t.DESCRIPTION,
+		t.TAG,
+		b.ENABLED_FLAG,
+		b.START_DATE_ACTIVE,
+		b.END_DATE_ACTIVE
+		FROM HPS_FND_LOOKUP_VALUE_B b
+		LEFT OUTER JOIN HPS_FND_LOOKUP_VALUE_TL t
+		ON (b.LOOKUP_CODE_ID = t.LOOKUP_CODE_ID AND t.LANG = #{request.locale,
+		jdbcType = VARCHAR, javaType = java.lang.String})
+		<where>
+			<if test="lookupTypeId != null"> 
+			AND b.LOOKUP_TYPE_ID = #{lookupTypeId,javaType=java.lang.Long}
+			</if>
+			<if test="lookupType != null"> 
+			AND b.LOOKUP_TYPE = #{lookupType,javaType=java.lang.String}
+			</if>
+			<if test="tag != null">
+			AND b.TAG = #{tag,javaType=java.lang.String}
+			</if>
+		    AND b.ENABLED_FLAG = 'Y'
+			AND sysdate &gt;= nvl(b.start_date_active, sysdate)
+			AND sysdate &lt;= nvl(b.end_date_active, sysdate)
+		</where>
+		ORDER BY b.LOOKUP_CODE_ID
+	</select>
+	
+	<select id="SelectValueOnlyValidate" resultType="java.lang.Integer" parameterType="hps.fnd.dto.LookupValue">
+		select count(*) from HPS_FND_LOOKUP_VALUE_B b 
+		<where>
+			<if test="lookupTypeId != null"> 
+			AND b.LOOKUP_TYPE_ID = #{lookupTypeId,javaType=java.lang.Long}
+			</if>
+			<if test="lookupCode != null"> 
+			AND b.LOOKUP_CODE = #{lookupCode,javaType=java.lang.String}
+			</if>
+		
+		</where>
+	</select>
+</mapper>

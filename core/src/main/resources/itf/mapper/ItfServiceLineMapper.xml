@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="hps.itf.mapper.ItfServiceLineMapper">
+	<resultMap type="hps.itf.dto.ItfServiceLine" id="BaseResult"
+		extends="com.hand.hap.mapper.StdMapper.STD">
+		<id column="SERVICE_LINE_ID" property="serviceLineId" jdbcType="DECIMAL"/>
+		<result column="SERVICE_HEADER_ID" property="serviceHeaderId" jdbcType="DECIMAL"/>
+		<result column="LINE_CODE" property="lineCode" jdbcType="VARCHAR"/>
+		<result column="ITF_URL" property="itfUrl" jdbcType="VARCHAR"/>
+		<result column="REQUEST_METHOD" property="requestMethod" jdbcType="VARCHAR" />
+		<result column="MEANNING" property="meanning" jdbcType="VARCHAR"/>
+		<result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+		<result column="ENABLE_FLAG" property="enableFlag" jdbcType="VARCHAR"/>
+		<result column="HEADER_PARA1" property="headerPara1" jdbcType="VARCHAR"/>
+		<result column="HEADER_PARA2" property="headerPara2" jdbcType="VARCHAR"/>
+		<result column="HEADER_PARA3" property="headerPara3" jdbcType="VARCHAR"/>
+		<result column="HEADER_PARA4" property="headerPara4" jdbcType="VARCHAR"/>
+		<result column="HEADER_PARA5" property="headerPara5" jdbcType="VARCHAR"/>
+		<result column="HEADER_PARA6" property="headerPara6" jdbcType="VARCHAR"/>
+		<result column="HEADER_PARA7" property="headerPara7" jdbcType="VARCHAR"/>
+		<result column="HEADER_PARA8" property="headerPara8" jdbcType="VARCHAR"/>
+		<result column="HEADER_PARA9" property="headerPara9" jdbcType="VARCHAR"/>
+		<result column="HEADER_PARA10" property="headerPara10" jdbcType="VARCHAR"/>
+		<result column="HEADER_PARA11" property="headerPara11" jdbcType="VARCHAR"/>
+		<result column="HEADER_PARA12" property="headerPara12" jdbcType="VARCHAR"/>
+		<result column="HEADER_PARA13" property="headerPara13" jdbcType="VARCHAR"/>
+		<result column="HEADER_PARA14" property="headerPara14" jdbcType="VARCHAR"/>
+		<result column="HEADER_PARA15" property="headerPara15" jdbcType="VARCHAR"/>
+		<result column="PARA1" property="para1" jdbcType="VARCHAR"/>
+		<result column="PARA2" property="para2" jdbcType="VARCHAR"/>
+		<result column="PARA3" property="para3" jdbcType="VARCHAR"/>
+		<result column="PARA4" property="para4" jdbcType="VARCHAR"/>
+		<result column="PARA5" property="para5" jdbcType="VARCHAR"/>
+		<result column="PARA6" property="para6" jdbcType="VARCHAR"/>
+		<result column="PARA7" property="para7" jdbcType="VARCHAR"/>
+		<result column="PARA8" property="para8" jdbcType="VARCHAR"/>
+		<result column="PARA9" property="para9" jdbcType="VARCHAR"/>
+		<result column="PARA10" property="para10" jdbcType="VARCHAR"/>
+		<result column="PARA11" property="para11" jdbcType="VARCHAR"/>
+		<result column="PARA12" property="para12" jdbcType="VARCHAR"/>
+		<result column="PARA13" property="para13" jdbcType="VARCHAR"/>
+		<result column="PARA14" property="para14" jdbcType="VARCHAR"/>
+		<result column="PARA15" property="para15" jdbcType="VARCHAR"/>
+		<result column="PARA16" property="para16" jdbcType="VARCHAR"/>
+		<result column="PARA17" property="para17" jdbcType="VARCHAR"/>
+		<result column="PARA18" property="para18" jdbcType="VARCHAR"/>
+		<result column="PARA19" property="para19" jdbcType="VARCHAR"/>
+		<result column="PARA20" property="para20" jdbcType="VARCHAR"/>
+		<result column="PARA21" property="para21" jdbcType="VARCHAR"/>
+		<result column="PARA22" property="para22" jdbcType="VARCHAR"/>
+		<result column="PARA23" property="para23" jdbcType="VARCHAR"/>
+		<result column="PARA24" property="para24" jdbcType="VARCHAR"/>
+		<result column="PARA25" property="para25" jdbcType="VARCHAR"/>
+	</resultMap>
+	<sql id="Base_Column_List">
+		SERVICE_LINE_ID,SERVICE_HEADER_ID,LINE_CODE,ITF_URL,REQUEST_METHOD,MEANNING,DESCRIPTION,ENABLE_FLAG,HEADER_PARA1,HEADER_PARA2,HEADER_PARA3,HEADER_PARA4,
+		HEADER_PARA5,HEADER_PARA6,HEADER_PARA7,HEADER_PARA8,HEADER_PARA9,HEADER_PARA10,HEADER_PARA11,HEADER_PARA12,HEADER_PARA13,HEADER_PARA14,HEADER_PARA15,
+		PARA1,PARA2,PARA3,PARA4,PARA5,PARA6,PARA7,PARA8,PARA9,PARA10,PARA11,PARA12,PARA13,PARA14,PARA15,PARA16,PARA17,PARA18,PARA19,PARA20,PARA21,PARA22,
+		PARA23,PARA24,PARA25
+	</sql>
+	
+	<select id="selectAllLine" resultMap="BaseResult">
+		SELECT b.service_line_id,
+		       b.service_header_id,
+		       b.line_code,
+		       b.itf_url,
+		       b.request_method,
+		       b.header_para1,
+		       b.header_para2,
+		       b.header_para3,
+		       b.header_para4,
+		       b.header_para5,
+		       b.header_para6,
+		       b.header_para7,
+		       b.header_para8,
+		       b.header_para9,
+		       b.header_para10,
+		       b.header_para11,
+		       b.header_para12,
+		       b.header_para13,
+		       b.header_para14,
+		       b.header_para15,
+		       b.para1,
+		       b.para2,
+		       b.para3,
+		       b.para4,
+		       b.para5,
+		       b.para6,
+		       b.para7,
+		       b.para8,
+		       b.para9,
+		       b.para10,
+		       b.para11,
+		       b.para12,
+		       b.para13,
+		       b.para14,
+		       b.para15,
+		       b.para16,
+		       b.para17,
+		       b.para18,
+		       b.para19,
+		       b.para20,
+		       b.para21,
+		       b.para22,
+		       b.para23,
+		       b.para24,
+		       b.para25,
+		       b.enable_flag,
+		       t.meanning,
+		       t.description
+		  FROM hps_itf_service_lines_b b
+		  LEFT OUTER JOIN hps_itf_service_lines_tl t
+		    ON (b.service_line_id = t.service_line_id AND 
+		    t.lang = #{request.locale, jdbcType = VARCHAR, javaType = java.lang.String})
+	</select>
+	
+	<select id="selectByHeaderIdAndCode" parameterType="java.lang.Long" resultMap="BaseResult">
+		SELECT b.service_line_id,
+		       b.service_header_id,
+		       b.line_code,
+		       b.itf_url,
+		       b.request_method,
+		       b.header_para1,
+		       b.header_para2,
+		       b.header_para3,
+		       b.header_para4,
+		       b.header_para5,
+		       b.header_para6,
+		       b.header_para7,
+		       b.header_para8,
+		       b.header_para9,
+		       b.header_para10,
+		       b.header_para11,
+		       b.header_para12,
+		       b.header_para13,
+		       b.header_para14,
+		       b.header_para15,
+		       b.para1,
+		       b.para2,
+		       b.para3,
+		       b.para4,
+		       b.para5,
+		       b.para6,
+		       b.para7,
+		       b.para8,
+		       b.para9,
+		       b.para10,
+		       b.para11,
+		       b.para12,
+		       b.para13,
+		       b.para14,
+		       b.para15,
+		       b.para16,
+		       b.para17,
+		       b.para18,
+		       b.para19,
+		       b.para20,
+		       b.para21,
+		       b.para22,
+		       b.para23,
+		       b.para24,
+		       b.para25,
+		       b.enable_flag,
+		       t.meanning,
+		       t.description
+		  FROM hps_itf_service_lines_b b
+		  LEFT OUTER JOIN hps_itf_service_lines_tl t
+		    ON (b.service_line_id = t.service_line_id AND 
+		    t.lang = #{request.locale, jdbcType = VARCHAR, javaType = java.lang.String})
+		    <where>
+				<if test="serviceHeaderId != null"> AND b.SERVICE_HEADER_ID =
+					#{serviceHeaderId,javaType=java.lang.Long}
+				</if>
+				<if test="lineCode != null"> AND b.LINE_CODE = 
+					#{lineCode,javaType=java.lang.String}
+				</if>
+			</where>
+			ORDER BY b.service_line_id
+	</select>
+</mapper>

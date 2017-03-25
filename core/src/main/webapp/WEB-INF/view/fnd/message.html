@@ -1,0 +1,228 @@
+<#-- 
+ * description: 站内消息
+ * version: 1.0 
+ * author:yanjie.zhang@hand-china.com
+ * 
+-->
+<#include "../include/head.html">
+<#include "../include/hps.html">
+<body style="padding: 3px;">
+ 	
+	<form id="message_form"></form>
+	<div id="message_grid" style="margin: 0; padding: 0"></div>
+	<script
+			src="${base.contextPath}/fnd/code?StatusData=HPS_FND_MESSAGE_STATUS"
+			type="text/javascript"></script>
+
+
+<script type="text/javascript">
+
+	//表格批量修改不可编辑
+	function gridLookDisable(gridName){
+		var obj=$("#"+gridName).find("div.l-icon.l-icon-save").parent();
+		obj.attr("class","none").attr("class","l-toolbar-item l-panel-btn l-toolbar-item-hasicon l-toolbar-item-disable");
+	}
+	function gridLookAble(gridName){
+		var obj=$("#"+gridName).find("div.l-icon.l-icon-save").parent();
+		obj.attr("class","none").attr("class","l-toolbar-item l-panel-btn l-toolbar-item-hasicon");
+	}
+
+	var gridData;
+
+    //弹出消息详细_messageId,_receiverId,_status
+    var openMessage = function(_messageId,_receiverId,_status,_rowId){
+
+		/*var _messageId = _item.messageId;
+		var _receiverId = _item.receiverId;
+		var _status = _item.status;*/
+		if(_status == "N"){
+			window.popWin = $.ligerDialog.open({
+				load  : false,
+				width : 650,
+				height: 350,
+				title : '<@spring.message "hfs.fnd.message.dialogtitle"/>',
+				url   : '${base.contextPath}/fnd/message_detail.html?receiverId='+_receiverId+'&status='+_status+'&messageId='+_messageId,
+				isResize : true,
+				buttons : [{
+					cls : 'l-dialog-btn-highlight',
+					text : '<@spring.message "hap.ok"/>',
+					onclick : function(item, dialog) {
+
+						window.parent.r_label();
+						var rowData = message_grid.getRow(_rowId);
+						message_grid.deleteRow(rowData);
+						dialog.close();
+					}
+				}]
+			});
+		}else{
+			window.popWin = $.ligerDialog.open({
+				load  : false,
+				width : 650,
+				height: 350,
+				title : '<@spring.message "hps.fnd.message.dialogtitle"/>',
+				url   : '${base.contextPath}/fnd/message_detail.html?receiverId='+_receiverId+'&status='+_status+'&messageId='+_messageId,
+				isResize : true,
+				buttons : [{
+					cls : 'l-dialog-btn-highlight',
+					text : '<@spring.message "hap.ok"/>',
+					onclick : function(item, dialog) {
+						dialog.close();
+					}
+				}]
+			});
+		}
+
+
+    }
+
+    $(function () {
+
+
+
+  	   	var message_grid = window['message_grid'] = $("#message_grid").ligerGrid({
+           unSetValidateAttr: false,
+           columns          : [{
+               display: '<@spring.message "hps.fnd.message.messagetypecode"/>',
+               name   : 'messageTypeCodeMeaning',
+               align  : 'center',
+               width  : 120,
+               editor : {
+                   type: 'text'
+               }
+           },{
+               display: '<@spring.message "hps.fnd.message.title"/>',
+               name   : 'title',
+               align  : 'center',
+               width  : 250,
+               editor : {
+                   type: 'text'
+               }
+           },{
+               display: '<@spring.message "hps.fnd.message.content"/>',
+               name   : 'content',
+               align  : 'center',
+               width  : 450,
+               editor : {
+                   type: 'text'
+               }
+           },{
+               display: '<@spring.message "hps.fnd.message.messagestatus"/>',
+               name   : 'messageStatus',
+               align  : 'center',
+               width  : 100,
+               editor : {
+                   type: 'text'
+               }
+           },{
+               display: '',
+               align  : 'center',
+               width  : 160,
+               editor : {
+                   type: 'text'
+               },
+               render:function (item) {
+
+					var _item = JSON.stringify(item);
+				   _item = _item.replace(/"/gm, "'");
+				   var _messageId = item.messageId;
+				   var _receiverId = item.receiverId;
+				   var _status = item.status;
+				   var _rowId = item.__id;
+
+                   return '<a href="javascript:void(0);" onclick="openMessage(\''+_messageId+'\',\''+_receiverId+'\',\''+_status+'\',\''+_rowId+'\');"><font color="blue">'+'查看详细' + '</font></a>';
+
+              //\''+item.messageId+'\',\''+item.receiverId+'\',\''+item.status+'\',\''+_item+'\'
+               }
+           }],
+			toolbar          : {
+				items: [{
+					text : '批量处理',
+					id   : 'look',
+					click: function () {
+						var selectedRowData = message_grid.getSelectedRows();
+						if(selectedRowData == null || selectedRowData == ""){
+							$.ligerDialog
+									.warn("请选择要查看的数据!",'<@spring.message "hap.tip.info"/>');
+						}else{
+							$.ligerDialog.confirm('是否确定批量查看', function (yes) {
+								if (yes) {
+									if(selectedRowData != null){
+										for(var i in selectedRowData){
+											var _messageId = selectedRowData[i].messageId;
+											$.ajax({
+												type: "POST",
+												//data :{},
+												url: '${base.contextPath}/fnd/message/queryBatch?messageId='+_messageId,
+												cache: false,
+												dataType: 'json',
+												async: false,
+												success: function (data) {
+													gridData = data;
+												}
+											});
+											var rowData = message_grid.getRow(selectedRowData[i].__id);
+											message_grid.deleteRow(rowData);
+										}
+									}
+								}
+							})
+						}
+					},
+					icon : 'save'
+				}]
+			},
+			url              : '${base.contextPath}/fnd/message/query',
+           enabledEdit      : false,
+           width            : '99%',
+           height           : '99%',
+           checkbox         : true,
+			usePager        : true
+		});
+
+		window['message_form'] = $("#message_form").ligerForm({
+			fields : [{
+				type : 'combobox',
+				label : '<@spring.message "hps.fnd.message.messagestatus"/>',
+				newline : false,
+				name : 'taxRate',
+				options : {
+					valueField : 'lookupCode',
+					textField : 'meaning',
+					data : StatusData,
+					slide : true,
+					value :'N',
+					onselected:function(valueField,textField) {
+						//已读数据
+						if(valueField == "Y"){
+							gridLookDisable('message_grid');
+							message_grid.deleteRange(message_grid.rows);
+							message_grid.setParm("status","Y");
+							message_grid.reload();
+							message_grid.changePage("first");
+							/*if(JSON2.stringify(gridData) != "[0]"){
+							 message_grid.addRows(gridData);
+							 }*/
+						}else{
+							gridLookAble('message_grid');
+							message_grid.deleteRange(message_grid.rows);
+							message_grid.setParm("status","N");
+							message_grid.reload();
+							message_grid.changePage("first");
+						}
+					}
+				}
+			}],
+			onAfterSetFields :　function(){
+				message_grid.setParm("status","N");
+				message_grid.reload();
+			},
+			labelWidth :900,
+			space   : 0,
+			inputWidth : 100,
+		});
+
+	})
+</script>
+</body>
+</html>

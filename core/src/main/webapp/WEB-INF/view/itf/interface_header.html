@@ -1,0 +1,247 @@
+<#include "../include/head.html">
+<link href="${base.contextPath}/resources/css/skins/icons.css" rel="stylesheet" type="text/css" />
+<script src="${base.contextPath}/resources/js/hfs.js"></script>
+<body style="padding: 10px; overflow: hidden;">
+<form id="itfHeaderForm"></form>
+<div id="itfHeaderGrid" style="margin: 0; padding: 0"></div>
+<script type="text/javascript">
+	
+	//查看Itfheader的详细信息
+	function openItfHeaderPage(serviceHeaderId, meanning) {
+    	window.popWin = $.ligerDialog.open({
+        	title : meanning + ' Detail',
+        	width : 760,
+        	height: 550,
+        	url   : 'interface_header_detail.html?serviceHeaderId=' + serviceHeaderId
+    	});
+	}
+    $(function () {
+    	//定义不同状态下的颜色
+    	 window.stateColor = {
+    			 "N"  : "color:#FFCC00;",
+    	         "Y"  : "color:#00CC00;",
+    	         "COMPLETE": "color:grey;",
+    	         "ERROR"   : "color:#FF3333;",
+    	         "BLOCKED" : "color:black;",
+    	         "NONE"    : "color:black;"
+    	 };
+    	//停用时的操作
+    	 window.pauseChecked = function () {
+             var arr = itfHeaderGrid.getSelectedRows();
+             if (arr && arr.length) {
+                 operation_ajax(arr, '${base.contextPath}/itf/header/pause', function () {
+                     $.each(arr, function (i, v) {
+                    	 itfHeaderGrid.getRow(v.__id).enableFlag = "N";
+                     });
+                     itfHeaderGrid.reRender();
+                 });
+             }
+         };
+         //启用时的操作
+         window.resumeChecked = function () {
+             var arr = itfHeaderGrid.getSelectedRows();
+             if (arr && arr.length) {
+                 operation_ajax(arr, '${base.contextPath}/itf/header/resume', function () {
+                     $.each(arr, function (i, v) {
+                    	 itfHeaderGrid.getRow(v.__id).enableFlag = "Y";
+                     });
+                     itfHeaderGrid.reRender();
+                 });
+             }
+         };
+         
+         function operation_ajax(obj, url, succesCallback) {
+             $.ajax({
+                 url        : url,
+                 type       : "POST",
+                 dataType   : "json",
+                 contentType: "application/json",
+                 data       : JSON2.stringify(obj),
+                 success    : function (json) {
+                     if (succesCallback) {
+                         succesCallback();
+                     }
+                     Hap.defaultSuccessHandler({json: json});
+                 },
+                 error      : function () {
+                     $.ligerDialog.closeWaitting();
+                 }
+             });
+         }
+    	
+        window['itfHeaderForm'] = $("#itfHeaderForm").ligerForm({
+            fields     : [{
+                type    : 'text',
+                label   : '<@spring.message "hps.itf.header.code"/>',
+                name    : 'serviceCode',
+                typeCase: 'uppercase'
+            },{
+            	type   : 'text',
+                label  : '<@spring.message "hps.itf.meaning"/>',
+                name   : 'meaning',
+                newline: false
+            },{
+	            type : 'combobox',
+	            label : '<@spring.message "hps.itf.enableflag"/>',
+	            name : 'enableFlag',
+	            options : {
+	                valueField : 'ID',
+	                textField : 'text',
+	                data : [ {
+	                    ID : 'Y',
+	                    text : 'Y'
+	                }, {
+	                    ID : 'N',
+	                    text : 'N'
+	                } ]
+	            },
+	            newline : false
+	        }],
+            buttons    : [{
+                text    : '<@spring.message "hap.query"/>',
+                disabled: false,
+                width   : 60,
+                click   : function () {
+                    Hap.gridQuery({
+                        form: itfHeaderForm,
+                        grid: itfHeaderGrid
+                    })
+                }
+            }, {
+                text    : '<@spring.message "hap.reset"/>',
+                disabled: false,
+                width   : 60,
+                click   : function () {
+                	itfHeaderForm.reset();
+                }
+            }],
+            onEnterDown: function () {
+                this.options.buttons[0].click();
+            }
+        });
+
+		//新增系统
+        window.newItf = function () {
+            window.popWin = $.ligerDialog.open({
+                width : 800,
+                height: 600,
+                title : '<@spring.message "hps.itf.header.create"/>',
+                url   : 'interface_header_add.html'
+            });
+        }
+		
+        window.editItf = function (id) {
+            window.popWin = $.ligerDialog.open({
+                load  : false,
+                width : 800,
+                height: 550,
+                title     : '<@spring.message "hps.itf.header.edit"/>',
+                url   : 'interface_header_edit.html?serviceHeaderId=' + id
+            });
+        }
+
+        window['itfHeaderGrid'] = $("#itfHeaderGrid").ligerGrid({
+            unSetValidateAttr: false,
+            columns          : [{
+            	display : '<@spring.message "hps.itf.header.code"/>',
+            	name    : 'serviceCode',
+            	align   : 'center',
+                width   : 120,
+                typeCase: 'uppercase',
+                render : function (item) {
+                    var serviceCode = item.serviceCode;
+                    var serviceHeaderId = item.serviceHeaderId;
+                    var meanning = item.meanning;
+                    var html = "<a href='javascript:void(0)' " +
+                    "style='text-decoration: none;" + (stateColor[item.enableFlag]) + "' " +
+                    "onclick='openItfHeaderPage(\"" + serviceHeaderId + "\",\"" + meanning + "\")'>" + serviceCode + "</a>";
+                    return html;
+                }
+            }, {
+            	display : '<@spring.message "hps.itf.meaning"/>',
+            	name    : 'meanning',
+            	align   : 'center',
+                width   : 120,
+                editor : {
+                	type : 'tl',
+                    idField:'serviceHeaderId',
+                    dto:'hps.itf.dto.ItfServiceHeader'
+                }
+            }, {
+            	display : '<@spring.message "hps.itf.description"/>',
+            	name    : 'description',
+            	align   : 'center',
+                width   : 120,
+                editor : {
+                	type : 'tl',
+                    idField:'serviceHeaderId',
+                    dto:'hps.itf.dto.ItfServiceHeader'
+                }
+            }, {
+            	display : '<@spring.message "hps.itf.header.servicetype"/>',
+            	name    : 'serviceType',
+            	align   : 'center',
+                width   : 120
+            }, {
+            	display : '<@spring.message "hps.itf.header.domainurl"/>',
+            	name    : 'domainUrl',
+            	align   : 'center',
+                width   : 260
+            }, {
+            	display : '<@spring.message "hps.itf.header.authflag"/>',
+            	name    : 'authFlag',
+            	align   : 'center',
+                width   : 70
+            }, {
+            	display : '<@spring.message "hps.itf.enableflag"/>',
+            	name    : 'enableFlag',
+            	align   : 'center',
+                width   : 70
+            }, {
+            	display : '<@spring.message "hps.action"/>',
+            	align   : 'center',
+                width   : 120,
+                render  : function (rowdata) {
+                    return '<a style="text-decoration: none;" href="${base.contextPath}/itf/interface_line.html?serviceHeaderId='+rowdata.serviceHeaderId+'">'+"<@spring.message 'hps.itf.application'/>" + '</a>'+
+                    		'/'+'<a style="text-decoration: none;" href="#" onclick="editItf(' + rowdata.serviceHeaderId + ')"><@spring.message "hap.edit"/></a>';
+                }
+            }],
+            url              : '${base.contextPath}/itf/header/query',
+            toolbar          : {
+                items: [{
+                    text   : '<@spring.message "hap.new"/>',
+                    disable: false,
+                    click  : newItf,
+                    icon   : 'add'
+                }, {
+                    line: true
+                }, {
+                	text : '<@spring.message "hap.resume"/>',
+                    click: resumeChecked,
+                    icon : 'resume'
+                }, {
+                	line: true
+                }, {
+                	text : '<@spring.message "hap.pause"/>',
+                    click: pauseChecked,
+                    icon : 'pause'
+                }, {
+                	line: true
+                }, {
+                    text : '<@spring.message "hap.clean"/>',
+                    click: function () {
+                    		clearRow(itfHeaderGrid);
+                    },
+                   icon : 'clear'
+                   //img:'${base.contextPath}/resources/images/clear.png'
+                }]
+            },
+            enabledEdit      : false,
+            width            : '99%',
+            height           : '98%',
+            checkbox         : true
+        });
+    });
+</script>
+</body>
+</html>

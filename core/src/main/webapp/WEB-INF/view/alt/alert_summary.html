@@ -1,0 +1,158 @@
+<#include "../include/head.html">
+<#include "../include/hps.html">
+<body style="padding: 15px">
+	<form id="alertQueryForm"></form>
+	<div id="alertQueryGrid" style="margin: 0; padding: 0"></div>
+	
+	<script
+		src="/core/fnd/code?sourceData=HPS_ALT_ALERT_TYPE"
+		type="text/javascript">
+	</script>
+	<script type="text/javascript">
+		
+		$(function(){
+			window["alertQueryForm"] = $("#alertQueryForm").ligerForm({
+				fields : [{
+					type : 'text',
+					label : '<@spring.message "hps.alt.alert.name"/>',
+					name : 'alertName',
+				},{
+					type : 'text',
+					label : '<@spring.message "hps.alt.alert.description"/>',
+					name : 'description',
+					newline : false,
+				},{
+					type : 'combobox',
+					label : '<@spring.message "hps.alt.alert.typecode"/>',
+					name : 'alertTypeCode',
+					options : {
+						valueField : 'lookupCode',
+						textField : 'meaning',
+						data : sourceData,
+						slide : true,
+	                }
+				}],
+				buttons : [{
+					text : '<@spring.message "hap.query"/>',
+					disabled : false,
+					width : 60,
+					click   : function () {
+	                    Hap.gridQuery({
+	                        form: alertQueryForm,
+	                        grid: alertQueryGrid
+	                    })
+	                }
+				},{
+					text : '<@spring.message "hap.reset"/>',
+					disabled : false,
+					width : 60,
+					click   : function () {
+	                	alertQueryForm.reset();
+	                }
+				}],
+				onEnterDown: function () {
+	                this.options.buttons[0].click();
+	            },
+			});
+			
+			window.findAlert = function(name,id){
+				parent.f_addTab("alert_"+id, name,'alt/alert_platform_edit.html?isedit=1&alertId='+id+'');
+			}
+			
+			window["alertQueryGrid"] = $("#alertQueryGrid").ligerGrid({
+				unSetValidateAttr: false,
+					columns : [{
+						display : '<@spring.message "hps.alt.alert.name"/>',
+		                name    : 'alertName',
+		                width   : 230,
+		               	render : function (rowdata) {
+                    		return '<a onclick="findAlert(\''+rowdata.alertName+'\''+',\''+rowdata.alertId+'\')">'               
+							+ rowdata.alertName
+							+ '</a>'
+                		} 
+		                
+					},{
+						display : '<@spring.message "hps.alt.alert.typecode"/>',
+						name : 'alertTypeCode',
+						width : 200,
+						editor : {
+							type : 'text',
+						},
+						render : function(item){
+							if (item.alertTypeCode == 'E')
+		                        return '事件';
+		                    if (item.alertTypeCode == 'P')
+		                        return '计划';
+		                    return '';
+						},
+					},{
+						display : '<@spring.message "hps.alt.alert.description"/>',
+						name : 'description',
+						width : 200,
+						editor : {
+							type : 'text',
+						}
+					},{
+						display : '<@spring.message "hps.alt.alert.enabledflag"/>',
+						name : 'enabledFlag',
+						width : 100,					
+						render : function (item) {
+		                    if (item.enabledFlag == 'Y')
+		                        return '已启用';
+		                    if (item.enabledFlag == 'N')
+		                        return '未启用';
+		                    return '';
+		                }
+					},{
+						display : '<@spring.message "hps.alt.alert.history"/>',
+						width : 150,
+						algin : 'center',
+						render : function (rowdata) {
+                    		return '<a href="#" onclick=""><@spring.message "hps.alt.alert.history"/></a>'
+                		}
+					}],
+					url : '${base.contextPath}/alt/alert/query',
+					toolbar : {
+						items : [{
+							text : '<@spring.message "hap.new"/>',
+							disable: false,
+		                    click : function() {
+		                    	
+		                    	parent.f_addTab('alert_new','NEW', 'alt/alert_platform.html');
+		                    },
+		                    icon   : 'add'
+						},{
+							line: true
+						},{
+							text : '<@spring.message "hap.delete"/>',
+							disabled : false,
+							click : function(){
+								Hap.gridDelete({
+		                            grid : alertQueryGrid,
+		                            url : '${base.contextPath}/alt/alert/remove',
+	                        	})
+							},
+							icon : 'delete'
+						},{
+							line : true
+						},{
+							text : '<@spring.message "hap.clean"/>',
+							disabled : false,
+							click : function(){
+								clearRow(alertQueryGrid);
+							},
+							 icon : 'clear'
+						}],
+					},
+					width : '99%',
+            		height : '98%',
+					
+			});
+			
+	
+			
+		});
+		
+	</script>
+
+</body>

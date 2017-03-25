@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="hps.org.mapper.HpsUserMapper">
+	<resultMap type="hps.org.dto.HpsUser" id="BaseResultMap" extends="com.hand.hap.mapper.StdMapper.STD">
+		<id column="USER_ID" property="userId" jdbcType="DECIMAL" />
+        <result column="USER_NAME" property="userName" jdbcType="VARCHAR" />
+        <result column="PASSWORD_ENCRYPTED" property="passwordEncrypted" jdbcType="VARCHAR" />
+        <result column="EMAIL" property="email" jdbcType="VARCHAR" />
+        <result column="PHONE" property="phone" jdbcType="VARCHAR" />
+        <result column="START_ACTIVE_DATE" property="startActiveDate" javaType="DATE"/>
+        <result column="END_ACTIVE_DATE" property="endActiveDate" javaType="DATE"/>
+        <result column="STATUS" property="status" jdbcType="VARCHAR" />
+        <result column="ATTRIBUTE1" property="empId" jdbcType="VARCHAR" />
+        <result column="emp_name" property="empName" jdbcType="VARCHAR" />
+        <result column="emp_number" property="empNumber" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<select id="selectHpsUser" resultMap="BaseResultMap" parameterType="hps.org.dto.HpsUser">
+		select t.user_id,
+		       t.user_name,
+		       t.password_encrypted,
+		       t.email,
+		       t.phone,
+		       t.start_active_date,
+		       t.end_active_date,
+		       t.status,
+		       t.attribute1 as emp_id,
+		       e.employee_name as emp_name,
+		       e.employee_number as emp_number
+		  from sys_user t
+		  left join hps_org_employee_b e
+		    on t.attribute1 = e.employee_id
+		    <where>
+		    	<if test="attribute1 != null">
+		    	 	t.attribute1 = #{attribute1,jdbcType=VARCHAR}
+		    	</if>
+		    </where>
+	</select>
+</mapper>

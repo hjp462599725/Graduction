@@ -1,0 +1,269 @@
+<#-- * description: 角色权限维护界面 * version: 1.0 *
+author:hongan.dong@hand-china.com * #{copyright}# * --> <#include
+"../include/head.html"> <#include "../include/hps.html">
+<html>
+<body style="padding: 10px; overflow: hidden;">
+	<form id="authHeaderForm"></form>
+	<div id="authHeaderGrid"></div>
+	<script type="text/javascript">
+		$(function() {
+			var authHeaderForm = window['authHeaderForm'] = $("#authHeaderForm").ligerForm(
+							{
+								fields : [
+										{
+											type : 'text',
+											display : '<@spring.message "role.rolename"/>',
+											name : 'roleDesc',
+											id : 'roleDescId',
+											newline : true
+										},
+										{
+											type : 'text',
+											display : '<@spring.message "hps.fnd.auth.resource_page_desc"/>',
+											name : 'resourceDesc',
+											id : 'resourceDescId',
+											newline : false
+										} ],
+								buttons : [ {
+									text : '<@spring.message "hap.query"/>',
+									disabled : false,
+									id : 'queryButton',
+									width : 60,
+									click : function() {
+										Hap.gridQuery({
+											form : authHeaderForm,
+											grid : authHeaderGrid
+										})
+									}
+								} ],
+								onEnterDown : function() {
+									this.options.buttons[0].click();
+								}
+							});
+
+			var authHeaderGrid = window['authHeaderGrid'] = $("#authHeaderGrid").ligerGrid(
+							{
+								unSetValidateAttr : false,
+								columns : [
+										{
+											display : '<@spring.message "role.rolename"/>',
+											name : 'roleId',
+											align : 'left',
+											width : 200,
+											textField : 'roleDesc',
+											editor : {
+												type : 'popup',
+												valueField : 'roleId',
+												textField : 'roleName',
+												selectBoxWidth : 200,
+												/* onSelected : function(e) {
+													var o = e.data[0]; //获取lov中选择的一行数据
+													authHeaderGrid.lastEditRow.roleId = o.roleId;
+													$.ligerui.get("authHeaderGrid").lastEditRow.roleId = o.roleId;
+													authHeaderGrid.lastEditRow.roleDesc = o.roleName;
+													$.ligerui.get("radioGrid").reRender();
+												}, */
+												grid : {
+													columns : [
+															{
+																display : '<@spring.message "role.rolecode"/>',
+																name : "roleCode",
+																align : 'left',
+																width : 200
+															},
+															{
+																display : '<@spring.message "role.rolename"/>',
+																name : "roleName",
+																align : 'left',
+																width : 200
+															} ],
+													url : '${base.contextPath}/fnd/authRole/query',
+												},
+												condition : {
+													inputWidth : 150,
+													labelWidth : 70,
+													fields : [
+															{
+																display : '<@spring.message "role.rolecode"/>',
+																name : "roleCode",
+																newline : true,
+																type : "text"
+															},
+															{
+																display : '<@spring.message "role.rolename"/>',
+																name : "roleName",
+																newline : false,
+																type : "text"
+															} ]
+												}
+											},
+											validate : {
+												required : true
+											}
+										},
+										{
+											display : '<@spring.message "hps.fnd.auth.resource_page_desc"/>',
+											name : 'resourceDesc',
+											align : 'left',
+											width : 200,
+											textField : 'resourceName',
+											editor : {
+												type : 'popup',
+												valueField : 'resourceId',
+												textField : 'resourceName',
+												selectBoxWidth : 200,
+												onSelected : function(e) {
+													var o = e.data[0];
+													authHeaderGrid.lastEditRow.resourceId = o.resourceId;
+													authHeaderGrid.lastEditRow.resourceDesc = o.resourceName;
+												},
+												grid : {
+													columns : [
+															{
+																display : 'URL',
+																name : "resourceUrl",
+																align : 'left',
+																width : 200
+															},
+															{
+																display : '<@spring.message "hps.fnd.auth.resource_page_desc"/>',
+																name : "comments",
+																align : 'left',
+																width : 200
+															},
+															{
+																display : '<@spring.message "hps.fnd.auth.resource_page_name"/>',
+																name : "resourceName",
+																align : 'left',
+																width : 200
+															} ],
+													url : '${base.contextPath}/fnd/authResource/query',
+												},
+												condition : {
+													inputWidth : 150,
+													labelWidth : 80,
+													fields : [
+															{
+																display : 'URL',
+																name : "resourceUrl",
+																newline : true,
+																type : "text"
+															},
+															{
+																display : '<@spring.message "hps.fnd.auth.resource_page_desc"/>',
+																name : "comments",
+																newline : false,
+																type : "text"
+															} ]
+												}
+											},
+											validate : {
+												required : true
+											}
+										},
+										{
+											display : '<@spring.message "hps.enabled_flag"/>',
+											name : 'enabledFlag',
+											width : 100,
+											align : 'center',
+											readonly : false,
+											render : Hap
+													.createGridCheckBoxRender()
+										},
+										{
+											display : '<@spring.message "hap.action"/>',
+											width : 100,
+											align : 'center',
+											render : function(rowdata) {
+												if (!rowdata.authHeaderId)
+													return '';
+												if (!!rowdata) {
+													return '<a href="#" onclick="editLines('
+															+ rowdata.authHeaderId
+															+ ','
+															+ rowdata.resourceId
+															+ ','
+															+ rowdata.roleId
+															+ ')"><@spring.message "hap.edit"/></a>'
+												}
+											}
+										} ],
+								url : '${base.contextPath}/fnd/authHeader/query',
+								toolbar : {
+									items : [
+											{
+												text : '<@spring.message "hap.new"/>',
+												disable : false,
+												click : function() {
+													authHeaderGrid.addRow({
+														enabledFlag : "Y"
+													});
+												},
+												icon : 'add'
+											},
+											{
+												line : true
+											},
+											{
+												text : '<@spring.message "hap.save"/>',
+												click : function() {
+													Hap
+															.gridSave({
+																grid : authHeaderGrid,
+																url : '${base.contextPath}/fnd/authHeader/submit',
+															})
+												},
+												icon : 'save'
+											},
+											{
+												line : true
+											},
+											{
+												text : '<@spring.message "hap.clean"/>',
+												click : function() {
+													clearRow(authHeaderGrid);
+												},
+												icon : 'clear'
+											} ]
+								},
+								enabledEdit : true,
+								width : '100%',
+								height : '100%',
+								checkbox : false,
+								rownumbers : true,
+								usePage : true,
+								pageSize : 10,
+								onSelectRow : function(rowdata, rowindex,
+										rowobj) {
+									if (rowdata.__status == 'add') {
+										return;
+									}
+								},
+								onBeforeEdit : function(e) {
+									if (e.column.columnname == 'roleId'
+											|| e.column.columnname == 'resourceDesc') {
+										return e.record.__status == 'add';
+									}
+									return true;
+								}
+							});
+			function authParams() {
+				this.roleId = '${Session.roleId}';
+				this.resourceUrl = "fnd/auth_header_demo.html";
+				this.targetUrl = "${base.contextPath}/fnd/authList/query";
+			}
+			hpsAuthControl(new authParams());
+		});
+		window.editLines = function(authHeaderId, resourceId, roleId) {
+			window.popWin = $.ligerDialog.open({
+				load : false,
+				width : 1020,
+				height : 580,
+				title : '<@spring.message "hps.fnd.auth.authline_detail"/>',
+				url : 'auth_line.html?authHeaderId=' + authHeaderId
+						+ '&resourceId=' + resourceId + '&roleId=' + roleId
+			});
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<#include "../include/head.html">
+<body style="padding: 15px">
+	<form id="download_info_form" style="margin-left: 2px; margin-top: 2px;"></form>
+	<script type="text/javascript">
+    
+		function f_save() {
+			var dialog = frameElement.dialog;
+			Hap.submitForm({
+                form:download_info_form,
+                url:'${base.contextPath}/fnd/plugDownloads/save?plugId=${RequestParameters.plugId}&plugVersionId=${RequestParameters.plugVersionId}',
+                success:function(json,opt){
+                	
+                	$.ligerDialog.success("<@spring.message "hap.tip.success"/>", '<@spring.message "hap.tip.info"/>', function(){                       
+                		$(function () {
+                    		location.href = '${base.contextPath}/fnd/plugs/download?sourceKey=${RequestParameters.plugVersionId}';
+                    		
+                    	});
+                		dialog.hidden();
+                    });
+                }
+            });
+			
+			
+	        
+	    	
+	    }
+	    function f_cancel() {
+	        var dialog = frameElement.dialog;
+	        dialog.close();
+	    }
+	      
+	    //表单底部按钮 
+	    Hap.setFormDefaultBtn(f_cancel, f_save);
+		
+        $(function () {
+        	window['download_info_form'] = $("#download_info_form").ligerForm({
+                fields     : [{
+    				width : 150,
+    				type : 'hidden',
+    				space : 10,
+    				name : 'downloadBy',
+    				options : {
+                     	value:'${Session.userId}',
+                    }
+    				
+    			},{
+                    type    : 'textarea',
+                    label   : '<@spring.message "hps.fnd.plugs.download_purpose"/>',
+                    name    : 'downloadPurpose',
+                    width : 200,
+                    validate: {
+                        required: true
+                    },
+                }],
+            });
+        }); 
+		
+    </script>
+</body>
+</html>

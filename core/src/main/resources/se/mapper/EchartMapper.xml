@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >  
+<mapper namespace="hps.se.mapper.EchartMapper">
+ <resultMap type="hps.se.dto.Echart" id="BaseResultMap">
+   <result column="FUNCTION_NAME" property="functionName" jdbcType="VARCHAR"/>
+   <result column="FNCOUNT" property="fnCount" jdbcType="DECIMAL"/>
+ </resultMap>
+ 
+ <sql id="Base_Column_List">
+FUNCTION_NAME,FNCOUNT
+ </sql>
+ 
+  <select id="selectEchart" resultMap="BaseResultMap" parameterType="hps.se.dto.Echart">
+	    SELECT st.function_name,
+	       (SELECT COUNT(1)
+	          FROM sys_function_b sfb
+	         WHERE sfb.parent_function_id = sf.function_id) fncount
+	  FROM sys_function_b  sf,
+	       sys_function_tl st
+	 WHERE sf.function_id = st.function_id
+	   AND st.lang = 'zh_CN'
+	   AND sf.resource_id IS NULL
+  </select>
+ 
+</mapper>

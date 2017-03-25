@@ -1,0 +1,330 @@
+<#-- * description: 权限行编辑界面 * version: 1.0 *
+author:hongan.dong@hand-china.com * #{copyright}# * --> <#include
+"../include/head.html"> <#include "../include/hps.html">
+<html>
+<body style="padding: 10px; overflow: hidden;">
+	<div id="authLineGrid"></div>
+	<script type="text/javascript">
+		$(function() {
+			var authLineGrid = window['authLineGrid'] = $("#authLineGrid")
+					.ligerGrid(
+							{
+								unSetValidateAttr : false,
+								columns : [
+										{
+											display : '<@spring.message "hps.fnd.auth.itemcode"/>',
+											name : 'itemCode',
+											align : 'left',
+											width : 150,
+											editor : {
+												type : 'popup',
+												valueField : 'itemCode',
+												textField : 'itemCode',
+												selectBoxWidth : 150,
+												onSelected : function(e) {
+													var o = e.data[0]; //获取lov中选择的一行数据
+													authLineGrid.lastEditRow.authHeaderId = '${RequestParameters.authHeaderId!}';
+													authLineGrid.lastEditRow.roleId = '${RequestParameters.roleId!}';
+													authLineGrid.lastEditRow.resourceId = '${RequestParameters.resourceId!}';
+													authLineGrid.lastEditRow.resourceItemId = o.resourceItemId;
+													authLineGrid.lastEditRow.itemCode = o.itemCode;
+													authLineGrid.lastEditRow.itemDescription = o.itemDescription;
+													$.ligerui
+															.get("authLineGrid").lastEditRow.itemRegion = o.itemRegion;
+													authLineGrid.lastEditRow.itemType = o.itemType;
+													$.ligerui.get(
+															"authLineGrid")
+															.reRender();
+													if (o.itemType == "button") {
+														setCss(
+																authLineGrid.lastEditRow.__index,
+																4);
+														setCss(
+																authLineGrid.lastEditRow.__index,
+																5);
+														setCss(
+																authLineGrid.lastEditRow.__index,
+																7);
+													} else if (o.itemType == "radiolist") {
+														setCss(
+																authLinesGrid.lastEditRow.__index,
+																4);
+														setCss(
+																authLinesGrid.lastEditRow.__index,
+																7);
+														setCss(
+																authLinesGrid.lastEditRow.__index,
+																8);
+													} else if (o.itemType == "toolbar") {
+														setCss(
+																authLineGrid.lastEditRow.__index,
+																4);
+														setCss(
+																authLineGrid.lastEditRow.__index,
+																5);
+														setCss(
+																authLineGrid.lastEditRow.__index,
+																7);
+														setCss(
+																authLineGrid.lastEditRow.__index,
+																8);
+													} else {
+														setCss(
+																authLineGrid.lastEditRow.__index,
+																4);
+														setCss(
+																authLineGrid.lastEditRow.__index,
+																8);
+													}
+												},
+												grid : {
+													columns : [
+															{
+																display : '<@spring.message "hps.fnd.auth.itemcode"/>',
+																name : "itemCode",
+																align : 'left',
+																width : 150
+															},
+															{
+																display : '<@spring.message "hps.fnd.auth.itemdesc"/>',
+																name : "itemDescription",
+																align : 'left',
+																width : 150
+															},
+															{
+																display : '<@spring.message "hps.fnd.auth.itemtype"/>',
+																name : "itemType",
+																align : 'left',
+																width : 150
+															},
+															{
+																display : '<@spring.message "hps.fnd.auth.itemregion"/>',
+																name : "itemRegion",
+																align : 'left',
+																width : 150
+															} ],
+													height : 280,
+													url : '${base.contextPath}/fnd/authItems/query?resourceId=${RequestParameters.resourceId!}',
+												},
+												condition : {
+													inputWidth : 150,
+													labelWidth : 50,
+													fields : [
+															{
+																display : '<@spring.message "hps.fnd.auth.itemcode"/>',
+																name : "itemCode",
+																newline : true,
+																type : "text"
+															},
+															{
+																display : '<@spring.message "hps.fnd.auth.itemdesc"/>',
+																name : "itemDescription",
+																newline : false,
+																type : "text"
+															},
+															{
+																display : '<@spring.message "hps.fnd.auth.itemtype"/>',
+																name : "itemType",
+																newline : false,
+																type : "text"
+															},
+															{
+																display : '<@spring.message "hps.fnd.auth.itemregion"/>',
+																name : "itemRegion",
+																newline : false,
+																type : "text"
+															} ]
+												}
+											},
+											validate : {
+												required : true
+											}
+										},
+										{
+											display : '<@spring.message "hps.fnd.auth.itemdesc"/>',
+											name : 'itemDescription',
+											width : 150,
+											align : 'left'
+										},
+										{
+											display : '<@spring.message "hps.fnd.auth.itemtype"/>',
+											name : 'itemType',
+											width : 100,
+											align : 'left'
+										},
+										{
+											display : '<@spring.message "hps.fnd.auth.itemregion"/>',
+											name : 'itemRegion',
+											width : 150,
+											align : 'left'
+										},
+										{
+											display : '<@spring.message "hps.fnd.auth.isread"/>',
+											name : 'isRead',
+											width : 80,
+											align : 'center',
+											hide : '',
+											render : Hap
+													.createGridCheckBoxRender()
+										},
+										{
+											display : '<@spring.message "hps.fnd.auth.isedit"/>',
+											name : 'isEdit',
+											width : 80,
+											align : 'center',
+											render : Hap
+													.createGridCheckBoxRender()
+										},
+										{
+											display : '<@spring.message "hps.fnd.auth.ishide"/>',
+											name : 'isHide',
+											width : 80,
+											align : 'center',
+											render : Hap
+													.createGridCheckBoxRender()
+										},
+										{
+											display : '<@spring.message "hps.fnd.auth.isrequired"/>',
+											name : 'isRequired',
+											width : 80,
+											align : 'center',
+											render : Hap
+													.createGridCheckBoxRender()
+										},
+										{
+											display : '<@spring.message "hps.fnd.auth.isoperate"/>',
+											name : 'isOperate',
+											width : 80,
+											align : 'center',
+											render : Hap
+													.createGridCheckBoxRender()
+										} ],
+								url : '${base.contextPath}/fnd/authLine/query?authHeaderId=${RequestParameters.authHeaderId!}&resourceId=${RequestParameters.resourceId!}',
+								toolbar : {
+									items : [
+											{
+												text : '<@spring.message "hap.new"/>',
+												disable : false,
+												click : function() {
+													authLineGrid.addRow({
+														isRead : "Y",
+														isEdit : "N",
+														isHide : "N",
+														isRequired : "N",
+														isOperate : "N"
+													});
+												},
+												icon : 'add'
+											},
+											{
+												line : true
+											},
+											{
+												text : '<@spring.message "hap.save"/>',
+												click : function() {
+													Hap
+															.gridSave({
+																grid : authLineGrid,
+																url : '${base.contextPath}/fnd/authLine/submit',
+															})
+												},
+												icon : 'save'
+											},
+											{
+												line : true
+											},
+											{
+												text : '<@spring.message "hap.clean"/>',
+												click : function() {
+													clearRow(authLineGrid);
+												},
+												icon : 'clear'
+											},
+											{
+												line : true
+											},
+											{
+												text : '<@spring.message "hap.delete"/>',
+												click : function() {
+													Hap
+															.gridDelete({
+																grid : authLineGrid,
+																url : '${base.contextPath}/fnd/authLine/delete'
+															});
+
+												},
+												icon : 'delete'
+											} ]
+								},
+								enabledEdit : true,
+								width : '100%',
+								height : '100%',
+								checkbox : false,
+								rownumbers : true,
+								onSelectRow : function(rowdata, rowindex,
+										rowobj) {
+								},
+								onBeforeEdit : function(e) {
+									if (e.column.columnname == 'itemCode') {
+										return e.record.__status == 'add';
+									}
+									return true;
+								},
+								onAfterEdit : function(e) {
+									if (e.record.itemType == 'button') {
+										setCss(e.record.__index, 4);
+										setCss(e.record.__index, 5);
+										setCss(e.record.__index, 7);
+									} else if (e.record.itemType == 'radiolist') {
+										setCss(e.record.__index, 4);
+										setCss(e.record.__index, 7);
+										setCss(e.record.__index, 8);
+									} else if (e.record.itemType == "toolbar") {
+										setCss(e.record.__index, 4);
+										setCss(e.record.__index, 5);
+										setCss(e.record.__index, 7);
+										setCss(e.record.__index, 8);
+									} else {
+										setCss(e.record.__index, 4);
+										setCss(e.record.__index, 8);
+									}
+								},
+								onAfterShowData : function(currentData) {
+									for (var i = 0; i < currentData.rows.length; i++) {
+										if (currentData.rows[i].itemType == null) {
+											setCss(i, 4);
+											setCss(i, 5);
+											setCss(i, 6);
+											setCss(i, 7);
+											setCss(i, 8);
+										} else if (currentData.rows[i].itemType == 'button') {
+											setCss(i, 4);
+											setCss(i, 5);
+											setCss(i, 7);
+										} else if (currentData.rows[i].itemType == 'radiolist') {
+											setCss(i, 4);
+											setCss(i, 7);
+											setCss(i, 8);
+										} else if (currentData.rows[i].itemType == "toolbar") {
+											setCss(i, 4);
+											setCss(i, 5);
+											setCss(i, 7);
+											setCss(i, 8);
+										} else {
+											setCss(i, 4);
+											setCss(i, 8);
+										}
+									}
+								}
+							});
+		});
+		function setCss(rowIndex, columnIndex) {
+			$(
+					"div.l-grid-body.l-grid-body2.l-scroll tr:eq(\'" + rowIndex
+							+ "\') td:eq(\'" + columnIndex
+							+ "\') div[class='l-grid-row-cell-inner']").css(
+					"display", "none");
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<#include "../include/head.html">
+<body style="padding: 15px">
+	<form id="lookupTypeForm" method="post" enctype="application/json;charset=UTF-8">
+	</form>
+	<div id="lookupValueGrid" style="margin-left: 2px; margin-top: 2px;"></div>
+	<script type="text/javascript">
+        function f_save() {
+            Hap.submitForm({
+                form:lookupTypeForm,
+                grid:lookupValueGrid,
+                gridName:'lookupValues',
+                url:'${base.contextPath}/fnd/lookupType/submit',
+                success:function(json,opt){
+                    $.ligerDialog.success("<@spring.message "hap.tip.success"/>", '<@spring.message "hap.tip.info"/>', function(){
+                        parent.lookupTypeGrid.reload();
+                        f_cancel();
+                    });
+                    
+                }
+            });
+        }
+        function f_cancel() {
+            var dialog = frameElement.dialog;
+            dialog.close();
+        }
+        <#assign isedit = (RequestParameters.isedit!'0')/>        
+        //表单底部按钮 
+        Hap.setFormDefaultBtn(f_cancel, f_save);
+    
+        window['lookupTypeForm'] = $("#lookupTypeForm").ligerForm({
+            inputWidth : 280,
+            fields : [{
+                name:'lookupTypeId',
+                type:'hidden'
+            },{
+                display : '<@spring.message "hps.fnd.lookup.type"/>',
+                name : "lookupType",
+                typeCase:'uppercase',
+                type : 'text',
+                validate : {
+                    required : true
+                }
+            },{
+            	display : '<@spring.message "hps.fnd.lookup.meaning"/>',
+                name : 'meaning',
+                enabledEdit: false,
+                type : 'tl',
+                options : {
+                    idField:'lookupTypeId',
+                    dto:'hps.fnd.dto.LookupType'
+                }
+            },{
+                display : '<@spring.message "hps.fnd.lookup.description"/>',
+                name : 'description',
+                type : 'tl',
+                options : {
+                    idField:'lookupTypeId',
+                    dto:'hps.fnd.dto.LookupType'
+                }
+            }],
+            onAfterSetFields:function(){
+            	liger.get('lookupType').setDisabled();
+            	liger.get('meaning').setDisabled();
+            	liger.get('description').setDisabled();
+            }
+        });
+    
+        lookupTypeForm.attr("action", "${base.contextPath}/fnd/lookupType/submit");
+        
+    	var st = null;
+    	var et = null;
+        lookupValueGrid = $("#lookupValueGrid").ligerGrid({
+            columns : [{
+                display : '<@spring.message "hps.fnd.lookup.code"/>',
+                name : 'lookupCode',
+                 width : 130,
+                align : 'left',
+                editor : {
+                    type : 'text'
+                },
+                validate:{
+                    required:true
+                }
+            }, {
+                display : '<@spring.message "hps.fnd.lookup.meaning"/>',
+                name : 'meaning',
+                width: 150,
+                align: 'left',
+                editor : {
+                    type : 'tl',
+                    idField:'lookupCodeId',
+                    dto:'hps.fnd.dto.LookupValue'
+                },
+                validate:{
+                    required:true
+                }
+            },{
+                display : '<@spring.message "hps.fnd.lookup.description"/>',
+                name : 'description',
+                width: 140,
+                align: 'left',
+                editor : {
+                	type : 'tl',
+                    idField:'lookupCodeId',
+                    dto:'hps.fnd.dto.LookupValue'
+                }
+            },{
+            	display : '<@spring.message "hps.fnd.lookup.tag"/>',
+                name : 'tag',
+                width : 80,
+                align : 'left',
+                editor : {
+                	type : 'tl',
+                    idField:'lookupCodeId',
+                    dto:'hps.fnd.dto.LookupValue'
+                }
+            },{
+            	display : '<@spring.message "hps.fnd.lookup.enabled"/>',
+	            name : 'enabledFlag',
+	            width : 50,
+	            align : 'center',
+	            render : Hap
+				.createGridCheckBoxRender()
+            },{
+                display: '<@spring.message "hps.fnd.lookup.startdateactive"/>',
+                name   : 'startDateActive',
+                type   : 'date',
+                align  : 'left',
+                width  : 120,
+                format : "yyyy-MM-dd",
+                editor : {
+                    type: 'date',
+                    showTime    : true,
+                    format      : "yyyy-MM-dd",
+                    onChangeDate: function(startDate){
+                    	var row = this.options.host_grid_row;
+                    	if(row.endDateActive&&new Date(row.endDateActive).getTime()<new Date(startDate).getTime()){
+                    		 $.ligerDialog.error("<@spring.message 'hps.time.error'/>", $l("hap.tip.info"));
+                    		 this.setValue("");
+                    	}
+                    }
+                
+                }
+            }, {
+                display: '<@spring.message "hps.fnd.lookup.enddateactive"/>',
+                name   : 'endDateActive',
+                type   : 'date',
+                format : "yyyy-MM-dd",
+                align  : 'left',
+                width  : 120,
+                editor : {
+                    type: 'date',
+                    showTime    : true,
+                    format      : "yyyy-MM-dd",
+                    onChangeDate: function (endDate){
+                    	var row = this.options.host_grid_row;
+                    	if(row.startDateActive&&new Date(endDate).getTime() < new Date(row.startDateActive).getTime()){
+                    		$.ligerDialog.error("<@spring.message 'hps.time.error'/>", $l("hap.tip.info"));
+           					this.setValue("");
+                    	}
+                    }
+                }
+            }],
+            showToggleColBtn : false,
+            width : '100%',
+            height : '99%',
+            rowHeight : 24,
+            columnWidth : 100,
+            root: 'rows',
+            record: 'total',
+            usePager : false,
+            mouseoverRowCssClass : null,
+            enabledEdit : true,
+            dateFormat: 'yyyy-MM-dd',
+            onBeforeEdit:function(e){
+				if(e.column.columnname == 'lookupCode')
+					return e.record.__status == 'add';
+				return true;
+			},
+			onAfterEdit:function(e){
+            	var manager = $("#lookupValueGrid").ligerGetGridManager();
+            	if(e.column.columnname == 'lookupCode'){
+            		var lookupCode = e.record.lookupCode;
+            		$.ajax({
+						url : '${base.contextPath}/fnd/lookupValue/onlyValidate?lookupTypeId=${RequestParameters.lookupTypeId!}&lookupCode='+lookupCode,
+						type : 'post',
+						cache : false,
+						async : false,
+						success : function(data) {
+							if(data>0){
+								$.ligerDialog.error('<@spring.message "hps.fnd.lookup.only_validate"/>');
+								e.record.lookupCode="";
+								manager.reRender();
+							}
+						}
+					});
+            	}
+            	
+            },
+            <#if isedit == '1'>
+             url: '${base.contextPath}/fnd/lookupValue/query?lookupTypeId=${RequestParameters.lookupTypeId!}', 
+            </#if>
+            toolbar : {
+                items : [ {
+                    text : '<@spring.message "hap.new"/>',
+                    disable : false,
+                    click : function() {
+                    	lookupValueGrid.addRow({
+                    		enabledFlag : 'Y'
+                    	});
+                    },
+                    icon : 'add'
+                }]
+            }
+        });
+        <#if isedit == '1'>
+        	Hap.loadForm({form:lookupTypeForm,url:'${base.contextPath}/fnd/lookupType/query',para:{lookupTypeId:${RequestParameters.lookupTypeId}}})
+       	</#if>
+    </script>
+</body>
+</html>

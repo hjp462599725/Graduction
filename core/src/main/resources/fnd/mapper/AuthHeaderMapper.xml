@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="hps.fnd.mapper.AuthHeaderMapper">
+
+	<resultMap type="hps.fnd.dto.AuthHeader" id="BaseResultMap">
+		<id column="AUTH_HEADER_ID" property="authHeaderId" jdbcType="DECIMAL" />
+		<result column="ROLE_ID" property="roleId" jdbcType="DECIMAL" />
+		<result column="RESOURCE_ID" property="resourceId" jdbcType="DECIMAL" />
+		<result column="ENABLED_FLAG" property="enabledFlag" jdbcType="VARCHAR" />
+		<result column="OBJECT_VERSION_NUMBER" property="objectVersionNumber" jdbcType="DECIMAL" />
+		<result column="ROLE_DESC" property="roleDesc" jdbcType="VARCHAR" />
+		<result column="RESOURCE_DESC" property="resourceDesc" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<select id="selectAuthHeader" resultMap="BaseResultMap"
+		parameterType="hps.fnd.dto.AuthHeader">
+		SELECT hfah.auth_header_id
+			   ,hfah.role_id
+		       ,hfah.resource_id
+			   ,hfah.enabled_flag
+			   ,hfah.object_version_number
+		FROM hps_fnd_auth_header hfah
+		WHERE hfah.role_id = #{roleId,jdbcType = DECIMAL}
+		AND hfah.resource_id = #{resourceId,jdbcType = DECIMAL}
+	</select>
+
+	<select id="selectAuthHeaders" resultMap="BaseResultMap"
+		parameterType="hps.fnd.dto.AuthHeader">
+		SELECT hfah.auth_header_id
+			   ,hfah.role_id
+			   ,sr.role_name as ROLE_DESC
+			   ,hfah.resource_id
+			   ,hfr.comments as RESOURCE_DESC
+			   ,hfah.enabled_flag
+			   ,hfah.object_version_number
+		FROM hps_fnd_auth_header hfah
+			 ,hps_fnd_resource hfr
+			 ,sys_role_b sr
+		<where>
+			hfah.resource_id = hfr.resource_id
+			AND hfah.role_id = sr.role_id
+			<if test="roleDesc != null">
+			AND sr.role_name like #{roleDesc,jdbcType=VARCHAR}
+			</if>
+			<if test="resourceDesc != null">
+			AND hfr.comments like #{resourceDesc,jdbcType=VARCHAR}
+			</if>
+		</where>
+		ORDER BY hfah.role_id,hfah.resource_id
+	</select>
+	
+	<select id="redisInitHeaders" resultMap="BaseResultMap">
+    	SELECT hfah.AUTH_HEADER_ID
+    	FROM hps_fnd_auth_header hfah
+    </select>
+    
+	<insert id="insertAuthHeaders" parameterType="hps.fnd.dto.AuthHeader">
+		<selectKey resultType="Long" keyProperty="authHeaderId"
+			order="BEFORE">
+		SELECT hps_fnd_auth_header_s.nextval FROM dual
+		</selectKey>
+		INSERT INTO hps_fnd_auth_header
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			AUTH_HEADER_ID
+			,ROLE_ID
+			,RESOURCE_ID
+			,ENABLED_FLAG
+			,
+			<if test="objectVersionNumber != null">OBJECT_VERSION_NUMBER,</if>
+			<if test="createdBy != null" > CREATED_BY,</if>
+      		<if test="creationDate != null" >CREATION_DATE,</if>
+      		<if test="lastUpdatedBy != null" >LAST_UPDATED_BY,</if>
+      		<if test="lastUpdateDate != null" >LAST_UPDATE_DATE,</if>
+      		<if test="lastUpdateLogin != null" >LAST_UPDATE_LOGIN,</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			#{authHeaderId,jdbcType=DECIMAL}
+			,#{roleId,jdbcType=DECIMAL}
+			,#{resourceId,jdbcType=DECIMAL}
+			,#{enabledFlag,jdbcType=VARCHAR}
+			,
+			<if test="objectVersionNumber != null">#{objectVersionNumber,javaType=java.lang.Long},</if>
+			<if test="createdBy != null">#{request.userId,javaType=java.lang.Long},</if>
+			<if test="creationDate != null">#{creationDate,javaType=java.util.Date},</if>
+			<if test="lastUpdatedBy != null">#{lastUpdatedBy,javaType=java.lang.Long},</if>
+			<if test="lastUpdateDate != null">#{lastUpdateDate,javaType=java.util.Date},</if>
+			<if test="lastUpdateLogin != null">#{request.userId,javaType=java.lang.Long},</if>
+		</trim>
+	</insert>
+
+	<update id="updateAuthHeaders">
+		UPDATE hps_fnd_auth_header hfah
+		SET hfah.ROLE_ID = #{roleId,jdbcType=DECIMAL}
+			,hfah.RESOURCE_ID = #{resourceId,jdbcType=DECIMAL}
+			,hfah.ENABLED_FLAG = #{enabledFlag,jdbcType=VARCHAR}
+		<if test="objectVersionNumber != null">
+		,hfah.OBJECT_VERSION_NUMBER = #{objectVersionNumber,javaType=java.lang.Long}+1
+		</if>
+		<if test="lastUpdatedBy != null">
+		,hfah.LAST_UPDATED_BY = #{lastUpdatedBy,javaType=java.lang.Long}
+		</if>
+		<if test="lastUpdateDate != null">
+		,hfah.LAST_UPDATE_DATE = SYSDATE
+		</if>
+		<if test="lastUpdateLogin != null">
+		,hfah.LAST_UPDATE_LOGIN = #{lastUpdateLogin,javaType=java.lang.Long}
+		</if>
+		WHERE hfah.AUTH_HEADER_ID = #{authHeaderId,jdbcType=DECIMAL}
+	</update>
+</mapper>

@@ -1,0 +1,183 @@
+<#-- * description: 员工信息界面 * version: 1.0 *
+author:xing.gong@hand-china.com * #{copyright}# * --> <#include
+"../include/head.html"> <#include "../include/hps.html">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<body style="padding: 3px; overflow: hidden;">
+	<form id="employeeForm"></form>
+	<div id="d_um_002_grid" style="margin: 0; padding: 0"></div>
+	<script type="text/javascript">
+    $(function () {       
+    	
+    	 	window['employeeForm'] = $("#employeeForm").ligerForm({
+            fields     : [{
+                type    : 'text',
+                label   : '<@spring.message "hps.alt.recipient.listname"/>',
+                name    : 'listName',
+                options : {
+                	disabled : true
+                }
+            
+            },{
+            	 type    : 'text',
+                 label   : '<@spring.message "hps.alt.recipient.description"/>',
+                 name    : 'listDescription',
+                 options : {
+                 	disabled : true
+                 }
+            },{
+                type : 'hidden',
+                name : 'recipientListId'
+            }
+            ]
+            
+        });
+    	
+        var d_um_002_grid = window['d_um_002_grid'] = $("#d_um_002_grid").ligerGrid({
+                columns          : [{
+										display : '<@spring.message "hps.org.employee.name"/>',
+										name : 'employeeName',
+										align : 'left',
+										width : 100,
+										textField : 'employeeName',
+										editor : {
+											type : 'popup',
+											valueField : 'employeeName',
+											textField : 'employeeName',
+											selectBoxWidth : 100,
+											onSelected : function(e) {
+												var o = e.data[0];
+												d_um_002_grid.lastEditRow.employeeNumber = o.employeeNumber;
+												d_um_002_grid.lastEditRow.mobilePhone = o.mobilePhone;
+												d_um_002_grid.lastEditRow.email = o.email;
+												d_um_002_grid.reRender();
+											},
+											   grid      : {
+                              columns: [{
+            	
+                    display: '<@spring.message "hps.org.employee.name"/>',
+                    name   : 'employeeName',
+                    align  : 'center',
+                    width  : 100,
+                    type   : 'text'
+		            },
+		            {
+		                display: '<@spring.message "hps.org.employee.code"/>',
+		                name   : 'employeeNumber',
+		                align  : 'center',
+		                width  : 100,
+		                type: 'text'
+		            },{
+		            	 display: '<@spring.message "hps.org.employee.mobilephone"/>',
+		                 name   : 'mobilePhone',
+		                 align  : 'center',
+		                 width  : 100,
+		                 type   : 'text'
+		            },{
+		            	 display: '<@spring.message "hps.org.employee.email"/>',
+		                 name   : 'email',
+		                 align  : 'center',
+		                 width  : 100,
+		                 type: 'text'
+		            }],
+                        url    : '${base.contextPath}/org/employees/query',
+	                    height : 350
+                    },
+										 condition : {
+                            inputWidth: 150,
+                            labelWidth: 70,
+                            fields    : [{
+                                display: '<@spring.message "hps.org.employee.name"/>',
+                                name   : "employeeName",
+                                newline: true,
+                                type   : "text"
+                            }, {
+                                display: '<@spring.message "hps.org.employee.code"/>',
+                                name   : "employeeNumber",
+                                newline: false,
+                                type   : "text"
+                            }]
+                        }
+										},
+										validate : {
+											required : true
+										}
+									}
+                
+                
+              ,{
+                display: '<@spring.message "hps.org.employee.code"/>',
+                name   : 'employeeNumber',
+                align  : 'center',
+                width  : 100,
+                editor : {
+                    type: 'text'
+                }
+            },{
+            	
+            	 display: '<@spring.message "hps.org.employee.email"/>',
+                 name   : 'email',
+                 align  : 'center',
+                 width  : 100,
+                 editor : {
+                     type: 'text'
+                 }
+            },{
+            	
+            	 display: '<@spring.message "hps.org.employee.mobilephone"/>',
+                 name   : 'mobilePhone',
+                 align  : 'center',
+                 width  : 100,
+                 editor : {
+                     type: 'text'
+                 }
+            }],
+            url              : '${base.contextPath}/alt/recipient/detail/query?recipientListId=${RequestParameters.recipientListId!}',
+            toolbar          : {
+                items: [{
+                    text   : '<@spring.message "hap.new"/>',
+                    disable: false,
+                    click  : function () {
+                    	d_um_002_grid.addRow({
+                    		enabledFlag:'Y' , //新建时默认启用为'Y'
+                    		lookupCode:'X'
+                    	})
+                    },
+                    icon   : 'add'
+                }, {
+                    line: true
+                }, {
+                    text : '<@spring.message "hap.save"/>',
+                    click: function () {
+                    	
+                        Hap.gridSave({
+                            grid: d_um_002_grid,
+                            url : '${base.contextPath}/org/employees/submit'
+                        })
+                    },
+                    icon : 'save'
+                },{
+                	text : '<@spring.message "hap.clean"/>',
+                    click: function () {
+                    		clearRow(d_um_002_grid);
+                    },
+                   icon : 'clear'
+                }]
+            },
+          	checkbox         :true,
+            enabledEdit      : true,
+            width            : '100%',
+            height           : '99%',
+            onBeforeEdit	:function(e){
+            	if(e.column.columnname=='employeeNumber')
+            		return e.record.__status=='add';
+            		return true;
+            }
+        });
+         Hap.loadForm({form:employeeForm,url:'${base.contextPath}/alt/recipient/query',para:{recipientListId:${RequestParameters.recipientListId!}}})
+       
+    });
+
+ 
+</script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<#-- * description: 表验证值测试界面 * version: 1.0 *
+author:dezhi.shen@hand-china.com * #{copyright}# * --> <#include
+"../include/head.html"> <#include "../include/hps.html">
+<html>
+<head></head>
+<body>
+	<form id="params"></form>
+	<form id="flexValueForm"></form>
+	<div id="flexValueGrid"></div>
+	<script type="text/javascript">
+		$(function(){
+			window['params'] = $("#params").ligerForm(
+			{
+				fields : [
+				{
+					display:'param3',
+					name: "param3",
+					type : 'text'
+				}]
+			});
+			window['flexValueForm'] = $("#flexValueForm").ligerForm(
+			{
+				fields : [
+				
+				{
+					display:'联动参数param1',
+					name: "param1",
+					type : 'text'
+				},
+				{
+					display:'param2',
+					name: "param2",
+					type : 'text'
+				},
+				{
+					display:"表名",
+					name: "controlTableName",
+					type : 'popup',
+					//textField必须写不然无法正确显示
+					textField :'controlTableName', 
+					/*参数:
+					项目路径 使用标签取得当前项目路径
+					当前语言环境
+					联动参数,此处为空
+					值集名称
+					控件类型为form
+					控件名称
+					*/ 
+					options : ${validateTableServiceImpl.getLov(
+							"${base.contextPath}",
+							"${base.locale}",
+							"",
+							"HPS.FND.FLEX_VALUE.DEMO",
+							"form",
+							"flexValueForm"
+						)}
+				},{
+					display : '列名',
+					name : "controlTabColName",
+					newline : false,
+					type : "text",
+				}]
+			});
+		liger.get("param2").setValue("现在有值");
+		liger.get("param3").setValue("oldValue");
+		window['flexValueGrid'] = $("#flexValueGrid").ligerGrid(
+		{
+			enabledEdit : true,
+			width : '100%',
+			height : '99%',
+			unSetValidateAttr : false,
+			toolbar : {
+					items : [{
+							text : '<@spring.message "hap.new"/>',
+							disable : false,
+							click : function() {
+								flexValueGrid.addRow({});
+							},
+						 	icon : 'add'
+						 	}]},
+			columns : [
+				{
+					display : '表名',
+					name :"controlTableName",
+					type : "text",
+					width : 100,
+					//textField必须写不然无法正确显示
+					textField :"controlTableName",
+					/*参数:
+					项目路径 使用标签取得当前项目路径
+					当前语言环境
+					联动参数,此处在查询条件中配置了{param1,TEXT} 采用键值对的方式
+					表示 param1取值的方法是 flexValueForm.getData().param1
+					也就是说从form中取得控件param1中的值
+					值集名称
+					控件类型为form
+					控件名称
+					*/ 
+					editor : ${
+						validateTableServiceImpl.getLov(
+							"${base.contextPath}",
+							"${base.locale}",
+							"param1:flexValueForm.getData().param1",
+							"HPS.FND.FLEX_VALUE.DEMO",
+							"grid",
+							"flexValueGrid")} 
+				},
+				{
+					display : '列名',
+					name : "controlTabColName",
+					type : "text",
+					width : 100,
+				}]
+			});
+		});
+	
+	</script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+<#-- * description: 新附件上传页面 * version: 1.0 *
+author:yangjie03@hand-china.com * time:2016年9月2日13:46:10 --> <#include
+"../include/head.html">
+<body>
+	<form id="upload_new_form"></form>
+	<div id="upload_new_grid" style="margin: 0; padding: 0"></div>
+	<script src="${base.contextPath}/fnd/code?sourceData=HPS_FND_PLUG_TYPE"
+		type="text/javascript">
+</script>
+
+	<script type="text/javascript">
+	$(function () {
+        window['upload_new_form'] = $("#upload_new_form").ligerForm({
+            fields     : [{
+                type    : 'text',
+                label   : '<@spring.message "hps.fnd.plugs.plug_name"/>',
+                name    : 'plugName',
+                width : 200,
+            },{
+                type    : 'text',
+                label   : '<@spring.message "hps.fnd.plugs.author_name"/>',
+                name    : 'authorName',
+                width : 200,
+                newline: false
+            }],
+            buttons    : [{
+                text    : '<@spring.message "hap.query"/>',
+                disabled: false,
+                width   : 60,
+                click   : function () {
+                    Hap.gridQuery({
+                        form: upload_new_form,
+                        grid: upload_new_grid
+                    })
+                }
+            }, {
+                text    : '<@spring.message "hap.reset"/>',
+                disabled: false,
+                width   : 60,
+                click   : function () {
+                	upload_new_form.reset();
+                }
+            }],
+            onEnterDown: function () {
+                this.options.buttons[0].click();
+            }
+        });
+        
+        window.editVersions = function (id) {
+            window.popWin = $.ligerDialog.open({
+                load  : false,
+                width : 600,
+                height: 500,
+                title     : '<@spring.message "hps.fnd.plug.version"/>',
+                url   : 'plugs_versions_download.html?plugId=' + id
+            });
+        }
+        
+        window['upload_new_grid'] = $("#upload_new_grid").ligerGrid({
+            unSetValidateAttr: false,
+            columns          : [{
+                display : '<@spring.message "hps.fnd.plugs.plug_name"/>',
+                name    : 'plugName',
+                align   : 'center',
+                width   : 150,
+                typeCase: 'uppercase',
+                editor : {
+                	type : ''
+                }
+            }, {
+                display: '<@spring.message "hps.fnd.plugs.plug_type"/>',
+                name   : 'plugTypeCode',
+                align  : 'center',
+                width  : 100,
+                editor : {
+                	type : '',
+                },render : function(item) {
+                    for ( var i in sourceData) {
+                        if (sourceData[i].lookupCode == item.plugTypeCode) {
+                            return sourceData[i].meaning;
+                        }
+                    }
+                    return '';
+                },
+            }, {
+            	display: '<@spring.message "hps.fnd.lookup.description"/>',
+                name   : 'plugDescription',
+                align  : 'center',
+                width  : 240,
+                editor : {
+                	type : '',
+                    
+                }
+            },{
+            	display: '<@spring.message "hps.fnd.plugs.author_name"/>',
+                name   : 'authorName',
+                align  : 'center',
+                width  : 150,
+                editor : {
+                	type : '',
+                    
+                }
+            },{
+            	display: '<@spring.message "hps.fnd.plugs.author_mail"/>',
+                name   : 'authorEmail',
+                align  : 'center',
+                width  : 200,
+                editor : {
+                	type : '',
+                	
+                },
+                validate:{
+                	email:true
+                }
+            }, {
+                display: '<@spring.message "hap.action"/>',
+                width  : 120,
+                align  : 'center',
+                render : function (rowdata) {
+                	if (!!rowdata.plugId) {
+                		return '<a href="#" onclick="editVersions(' + rowdata.plugId + ')"><@spring.message "hps.fnd.plug.version"/></a>'
+                    }
+                }
+            }],
+            url              : '${base.contextPath}/fnd/download/plugs/query',
+            enabledEdit      : true,
+            width            : '99%',
+            height           : '98%',
+            /* onBeforeEdit     : function (e){
+            	if (e.column.columnname == 'lookupType')
+            		return e.record.__status == 'add';
+            	return true;
+            } */
+        });
+    });
+	</script>
+
+</body>
+</html>

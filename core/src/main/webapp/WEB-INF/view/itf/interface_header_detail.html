@@ -1,0 +1,217 @@
+<#include "../include/head.html">
+<body style="padding: 12px 10px 0px 10px">
+<form id="header_form" name="header_form"></form>
+<div id="line_grid" name="line_grid"></div>
+
+<script type="text/javascript">
+    var infoDetailData = null;
+    //获取任务详情
+    getInfoDetail();
+    //任务详情显示
+    var header_form = window['header_form'] = $("#header_form").ligerForm({
+        fields: [
+            {
+        		type   : 'checkbox',
+        		name   : 'enableFlag',
+        		label  : '<@spring.message "hps.itf.enableflag"/>',
+        		readonly: true,
+        		labelAlign : 'center',
+        		options : {
+        			checkValue :　'Y',
+        			uncheckValue : 'N'
+        		},
+        		group	: '<@spring.message "hps.itf.basic"/>'
+        	},{
+                type    : 'text',
+                label   : '<@spring.message "hps.itf.header.code"/>',
+                name    : 'serviceCode',
+                typeCase: 'uppercase',
+                labelAlign : 'center',
+                readonly: true
+            },{
+                label  : '<@spring.message "hps.itf.meaning"/>',
+                name   : 'meanning',
+                labelAlign : 'center',
+                newline: false,
+                readonly: true,
+                type : 'tl',
+                options : {
+                    idField:'serviceHeaderId',
+                    dto:'hps.itf.dto.ItfServiceHeader'
+                }
+            },{
+            	type   : 'text',
+                label  : '<@spring.message "hps.itf.header.servicetype"/>',
+                labelAlign : 'center',
+                readonly: true,
+                name   : 'serviceType'
+            },{
+            	type   : 'text',
+                label  : '<@spring.message "hps.itf.header.domainurl"/>',
+                name   : 'domainUrl',
+                readonly: true,
+                labelAlign : 'center',
+                newline: false
+            },{
+                label  : '<@spring.message "hps.itf.description"/>',
+                labelAlign : 'center',
+                name   : 'description',
+                readonly: true,
+                type : 'tl',
+                options : {
+                    idField:'serviceHeaderId',
+                    dto:'hps.itf.dto.ItfServiceHeader',
+                    required :true
+                }
+            },{
+            	type   : 'text',
+                label  : '<@spring.message "hps.itf.header.requestformat"/>',
+                labelAlign : 'center',
+                readonly: true,
+                name   : 'requestFormat',
+                newline: false
+            },{
+            	type   : 'text',
+                label  : '<@spring.message "hps.itf.header.requestcontenttype"/>',
+                labelAlign : 'center',
+                readonly: true,
+                name   : 'requestContenttype'
+            },{
+            	type   : 'text',
+                label  : '<@spring.message "hps.itf.header.requestaccept"/>',
+                labelAlign : 'center',
+                readonly: true,
+                name   : 'requestAccept',
+                newline: false
+            },{
+            	type   : 'checkbox',
+            	name   : 'authFlag',
+            	label  : '<@spring.message "hps.itf.header.authflag"/>',
+            	labelAlign : 'center',
+            	readonly: true,
+            	options : {
+        			checkValue :　'Y',
+        			uncheckValue : 'N'
+        		},
+            	group  : '<@spring.message "hps.itf.extend"/>'
+            },{
+            	type   : 'text',
+                label  : '<@spring.message "hps.itf.header.authusername"/>',
+                labelAlign : 'center',
+                readonly: true,
+                name   : 'authUsername'
+            },{
+            	type   : 'text',
+                label  : '<@spring.message "hps.itf.header.authpassword"/>',
+                labelAlign : 'center',
+                name   : 'authPassword',
+                readonly: true,
+                newline: false
+            },{
+            	type   : 'text',
+                label  : '<@spring.message "hps.itf.header.namespace"/>',
+                labelAlign : 'center',
+                readonly: true,
+                name   : 'namespace'
+            },{
+            	type   : 'textarea',
+                label  : '<@spring.message "hps.itf.header.bodyheader"/>',
+                labelAlign : 'center',
+                name   : 'bodyHeader'
+            },{
+            	type   : 'textarea',
+                label  : '<@spring.message "hps.itf.header.bodytail"/>',
+                labelAlign : 'center',
+                name   : 'bodyTail',
+                newline: false
+            }
+        ],
+        onAfterSetFields : function() {
+        	liger.get('bodyHeader').setDisabled();
+            liger.get('bodyTail').setDisabled();
+		}
+    });
+
+    //任务详情属性显示
+    var line_grid = window['line_grid'] = $("#line_grid").ligerGrid({
+        unSetValidateAttr: false,
+        columns          : [
+            {
+                display: '<@spring.message "hps.itf.line.code"/>',
+                name   : 'lineCode',
+                align  : 'center',
+                width  : 200,
+                editor : {type: 'text'}
+            },
+            {
+            	display: '<@spring.message "hps.itf.meaning"/>',
+            	name   : 'meanning',
+            	align  : 'center',
+            	width  : 200,
+            	editor : {type: 'text'}
+            },
+            {
+                display: '<@spring.message "hps.itf.line.itfurl"/>',
+                name   : 'itfUrl',
+                align  : 'center',
+                width  : 300,
+                editor : {type: 'text'}
+            }
+        ],
+        url              : '${base.contextPath}/itf/line/query?serviceHeaderId=${RequestParameters.serviceHeaderId!}',
+        width            : '99%',
+        height           : '70%',
+        usePager         : false
+    });
+
+    //为form设置显示属性
+    setJobFormData();
+
+    //获取任务详情
+    function getInfoDetail() {
+        var headerData = {
+        	serviceHeaderId    : "${RequestParameters.serviceHeaderId}"
+        };
+        $.ajax({
+            url        : '${base.contextPath}/itf/header/queryById',
+            async      : false,
+            type       : "POST",
+            dataType   : "json",
+            contentType: "application/json",
+            data       : JSON2.stringify(headerData),
+            success    : function (json) {
+                if (json.success) {
+                    infoDetailData = json.rows[0];
+                }
+            },
+            error      : function () {
+                $.ligerDialog.closeWaitting();
+            }
+        });
+    }
+
+    //为form设置显示属性
+    function setJobFormData() {
+        var obj = {
+        	serviceHeaderId   : infoDetailData.serviceHeaderId,
+        	serviceCode       : infoDetailData.serviceCode,
+        	meanning          : infoDetailData.meanning,
+        	serviceType       : infoDetailData.serviceType,
+        	domainUrl         : infoDetailData.domainUrl,
+        	requestMethod     : infoDetailData.requestMethod,
+        	requestFormat     : infoDetailData.requestFormat,
+        	requestContenttype: infoDetailData.requestContenttype,
+        	requestAccept     : infoDetailData.requestAccept,
+        	authUsername      : infoDetailData.authUsername,
+        	authPassword      : infoDetailData.authPassword,
+        	description       : infoDetailData.description,
+        	namespace		  : infoDetailData.namespace,
+        	enableFlag        : infoDetailData.enableFlag,
+        	authFlag          : infoDetailData.authFlag
+        };
+        var form = liger.get("header_form");
+        form.setData(obj);
+    }
+</script>
+</body>
+</html>

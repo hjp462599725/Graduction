@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="hps.fnd.mapper.MessageManageMapper">
+	<resultMap type="hps.fnd.dto.Message" id="MessageMap">
+		<id column="MESSAGE_ID" property="messageId" jdbcType="DECIMAL" />
+		<result column="MESSAGE_TYPE_CODE" property="messageTypeCode" jdbcType="VARCHAR" />
+		<result column="RECEIVER_ID" property="receiverId" jdbcType="DECIMAL" />
+		<result column="TITLE" property="title" jdbcType="VARCHAR" />
+		<result column="CONTENT" property="content" jdbcType="VARCHAR" />
+		<result column="STATUS" property="status" jdbcType="VARCHAR" />
+		<result column="MESSAGE_TYPE_CODE_MEANING" property="messageTypeCodeMeaning" jdbcType="VARCHAR" />
+		<result column="MESSAGE_STATUS" property="messageStatus" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="queryMessage" resultMap="MessageMap" parameterType="hps.fnd.dto.Message">
+		 select FMB.MESSAGE_ID,
+				FMB.MESSAGE_TYPE_CODE,
+				FMB.RECEIVER_ID,
+				FMB.TITLE,
+				FMB.CONTENT,
+				FMB.STATUS,
+				FLVB.MEANING MESSAGE_TYPE_CODE_MEANING,
+				FLV_B1.MEANING MESSAGE_STATUS
+			from HPS_FND_MESSAGE FMB
+			LEFT JOIN HPS_FND_LOOKUP_VALUE_B FLVB
+				ON (FLVB.LOOKUP_TYPE = 'HPS_FND_MESSAGE_TYPE'
+					and FMB.MESSAGE_TYPE_CODE = FLVB.LOOKUP_CODE)
+			LEFT JOIN HPS_FND_LOOKUP_VALUE_B FLV_B1
+				ON (FLV_B1.LOOKUP_TYPE = 'HPS_FND_MESSAGE_STATUS'
+					and FMB.STATUS = FLV_B1.LOOKUP_CODE)
+		<where>
+		     1 = 1
+			<if test="messageId!=null">
+				AND FMB.MESSAGE_ID = #{messageId,jdbcType=DECIMAL}
+			</if>
+			<if test="receiverId!=null">
+				AND FMB.RECEIVER_ID = #{receiverId,jdbcType=DECIMAL}
+			</if>
+		</where>
+	</select>
+
+    <!--改变消息状态   变成已读-->
+    <update id="updataStatus" parameterType="java.lang.Long">
+         update HPS_FND_MESSAGE fmb
+            set fmb.status = 'Y'
+          <where>
+                  fmb.message_id = #{messageId,jdbcType=DECIMAL}
+          </where>
+    </update>
+
+
+	<select id="queryMessageCount" resultType="int" parameterType="hps.fnd.dto.Message">
+		select count(1)
+		from HPS_FND_MESSAGE FMB
+		<where>
+			1 = 1
+			<if test="status!=null">
+				AND FMB.STATUS = #{status,jdbcType=VARCHAR}
+			</if>
+			<if test="receiverId!=null">
+				AND FMB.RECEIVER_ID = #{receiverId,jdbcType=DECIMAL}
+			</if>
+		</where>
+	</select>
+</mapper>

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="hps.alt.mapper.AlertActionDtlMapper">
+	<resultMap type="hps.alt.dto.AlertActionDtl" id="BaseResult">
+		<id column="ACTION_DTL_ID" property="actionDtlId" jdbcType="DECIMAL"/>
+		<result column="ACTION_ID" property="actionId" jdbcType="DECIMAL"/>
+		<result column="ALERT_ID" property="alertId" jdbcType="DECIMAL"/>
+		<result column="MAIL_CONFIG_CODE" property="mailConfigCode" jdbcType="VARCHAR"/>
+		<result column="RECIPIENT_LIST_ID" property="recipientListId" jdbcType="DECIMAL"/>
+		<result column="REC_EMPLOYEE_ID" property="recEmployeeId" jdbcType="DECIMAL"/>
+		<result column="RECIPIENT" property="recipient" jdbcType="CLOB"/>
+		<result column="SUBJECT" property="subject" jdbcType="VARCHAR"/>
+		<result column="CARBON_COPY" property="carbonCopy" jdbcType="CLOB"/>
+		<result column="BLIND_CARBON_COPY" property="blindCarbonCopy" jdbcType="CLOB"/>
+		<result column="ALERT_MESSAGE" property="alertMessage" jdbcType="CLOB"/>
+		<result column="ACTION_NAME" property="actionName" jdbcType="VARCHAR"/>
+		<result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+		<result column="NOTICE_TYPE_CODE_MEANING" property="noticeTypeCodeMeaning" jdbcType="VARCHAR"/>
+		<result column="LIST_NAME" property="listName" jdbcType="VARCHAR"/>
+		<result column="EMPLOYEE_NAME" property="employeeName" jdbcType="VARCHAR"/>
+	</resultMap>
+	
+	<select id="queryAlertActionDtl" parameterType="hps.alt.dto.AlertActionDtl" resultMap="BaseResult">
+			select haaad.action_dtl_id,
+			       haaad.action_id,
+			       haaad.alert_id,
+			       haaad.mail_config_code,
+			       haaad.recipient_list_id,
+			       haaad.rec_employee_id,
+			       haaad.recipient,
+			       haaad.subject,
+			       haaad.carbon_copy,
+			       haaad.blind_carbon_copy,
+			       haaad.alert_message,
+			       haaa.action_name,
+			       haaa.description,
+			       hflv.meaning as notice_type_code_meaning,
+			       harl.list_name,
+			       hoe.employee_name
+			  from hps_alt_alert_action_dtl haaad
+			  left join hps_alt_recipient_list harl
+			    on haaad.recipient_list_id = harl.recipient_list_id
+			  left join hps_org_employee_b hoe
+			    on haaad.rec_employee_id = hoe.employee_id
+			  left join hps_fnd_lookup_value_b hflv
+			    on hflv.lookup_type = 'HPS_ALT_NOTICE_TYPE'
+			   and hflv.lookup_code = #{noticeTypeCode,javaType=java.lang.String}, hps_alt_alert_action haaa
+			 where haaad.action_id = #{actionId,javaType=java.lang.Long}
+			   and haaad.alert_id = #{alertId,javaType=java.lang.Long}
+			   and haaad.action_id = haaa.action_id
+			   <if test="noticeTypeCode != null">
+			   		and haaa.notice_type_code = #{noticeTypeCode,javaType=java.lang.String}
+			   </if>
+			   
+		
+	</select>
+	
+	<select id="queryAlertActionDtls" parameterType="hps.alt.dto.AlertActionDtl" resultMap="BaseResult">
+			select haaad.action_dtl_id,
+			       haaad.action_id,
+			       haaad.alert_id,
+			       haaad.mail_config_code,
+			       haaad.recipient_list_id,
+			       haaad.rec_employee_id,
+			       haaad.recipient,
+			       haaad.subject,
+			       haaad.carbon_copy,
+			       haaad.blind_carbon_copy,
+			       haaad.alert_message,
+			       haaa.action_name,
+			       haaa.description,
+			       hflv.meaning as notice_type_code_meaning,
+			       harl.list_name,
+			       hoe.employee_name
+			  from hps_alt_alert_action_dtl haaad
+			  left join hps_alt_recipient_list harl
+			    on haaad.recipient_list_id = harl.recipient_list_id
+			  left join hps_org_employee_b hoe
+			    on haaad.rec_employee_id = hoe.employee_id
+			  left join hps_fnd_lookup_value_b hflv
+			    on hflv.lookup_type = 'HPS_ALT_NOTICE_TYPE'
+			   and hflv.lookup_code = #{noticeTypeCode,javaType=java.lang.String}, hps_alt_alert_action haaa
+			 where 
+			 	haaad.action_id = haaa.action_id
+			   <if test="actionId != null">
+			   		and haaad.action_id = #{actionId,javaType=java.lang.Long}
+			   </if>
+			   <if test="alertId != null">
+			   		and haaad.alert_id = #{alertId,javaType=java.lang.Long}
+			   </if>
+			   
+			   <if test="noticeTypeCode != null">
+			   		and haaa.notice_type_code = #{noticeTypeCode,javaType=java.lang.String}
+			   </if>
+			   
+		
+	</select>
+
+
+</mapper>

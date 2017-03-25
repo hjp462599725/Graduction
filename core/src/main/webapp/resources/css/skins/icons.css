@@ -1,0 +1,6 @@
+.l-icon{ width:16px; height:16px; overflow:hidden;}
+.l-icon-clear{ background:url('../../images/clear.png') no-repeat center;}
+.l-icon-deploy{ background:url('../../images/deploy.png') no-repeat center;}
+.l-icon-import {
+	background: url('../../images/import.png') no-repeat center;
+}

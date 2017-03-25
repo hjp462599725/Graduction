@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="hps.fnd.mapper.FlexVsetMapper">
+	<resultMap type="hps.fnd.dto.FlexVset" id="BaseResult">
+		<id column="flex_value_set_id" property="flexValueSetId" jdbcType="DECIMAL" />	
+		<result column="flex_value_set_name" property="flexValueSetName" jdbcType="VARCHAR" />
+		<result column="validation_type" property="validationType" jdbcType="VARCHAR" />
+		<result column="description" property="description" jdbcType="VARCHAR" />
+		<result column="enabled_flag" property="enabledFlag" jdbcType="VARCHAR" />
+		<result column="table_name" property="tableName" jdbcType="VARCHAR" />
+		<result column="where_condition" property="whereCondition" jdbcType="CLOB" />
+		<result column="title" property="title" jdbcType="VARCHAR" />
+		<result column="width" property="width" jdbcType="DECIMAL" />
+		<result column="height" property="height" jdbcType="DECIMAL" />
+		<result column="delayed_loading_flag" property="delayedLoadingFlag" jdbcType="VARCHAR" />
+		<result column="validation_type_meaning" property="validationTypeMeaning" jdbcType="VARCHAR" />
+		<result column="expand_method" property = "expandMethod" jdbcType="CLOB" />
+	</resultMap>
+<!-- 通过id查询FlexValue -->
+	<select id="selectFlexValueById" resultMap="BaseResult" parameterType="java.lang.Long">
+		select hff.flex_value_set_name,
+			   hff.flex_value_set_id 
+		  from hps_fnd_flex_vset_b hff 
+		 where hff.flex_value_set_id = #{flexValueSetId,jdbcType=DECIMAL}
+	</select>
+	
+	<select id="selectFlexValueByExm" resultMap="BaseResult" parameterType="hps.fnd.dto.FlexVset">
+		SELECT hffvs.flex_value_set_id,
+		       hffvs.flex_value_set_name,
+		       hffvs.validation_type,
+		       hffvsl.description,
+		       hffvs.enabled_flag,
+		       hffvs.table_name,
+		       hffvs.where_condition,
+		       hffvs.title,
+		       hffvs.width,
+		       hffvs.height,
+		       nvl(hffvs.delayed_loading_flag,
+		           'N') AS delayed_loading_flag,
+		       hflv.meaning AS validation_type_meaning,
+		       hffvs.expand_method
+		  FROM hps_fnd_flex_vset_b hffvs
+		  LEFT JOIN hps_fnd_lookup_value_vl hflv
+		    ON (hflv.lookup_type = 'HFS_FND_VALIDATION_TYPE' AND hffvs.validation_type = hflv.lookup_code AND hflv.lang = #{request.locale ,jdbcType=VARCHAR})
+		   LEFT JOIN hps_fnd_flex_vset_tl hffvsl 
+		    ON (hffvs.flex_value_set_id = hffvsl.flex_value_set_id AND hffvsl.lang = #{request.locale,jdbcType=VARCHAR})
+		<where>
+		       1 = 1
+		<if test="flexValueSetId != null">
+		   AND hffvs.flex_value_set_id = #{flexValueSetId,jdbcType=DECIMAL}
+		</if>
+		<if test="flexValueSetName != null">
+		   AND hffvs.flex_value_set_name like #{flexValueSetName,jdbcType=VARCHAR}
+		</if>
+		<if test="description != null">
+		   AND hffvs.description like #{description,jdbcType=VARCHAR}
+		</if>
+		<if test="enabledFlag != null">
+		   AND hffvs.enabled_flag = #{enabledFlag,jdbcType=VARCHAR}
+		</if>
+	    </where>
+	</select>
+	
+	<!-- dezhi.shen@hand-china.com 根据主键 更新FlexValueSet(字段为空也更新)  -->
+	<update id="updateFlexValueSetValidateById" parameterType="hps.fnd.dto.FlexVset">
+		update hps_fnd_flex_vset_b
+		   set description = #{description,jdbcType=VARCHAR},
+		       table_name = #{tableName,jdbcType=VARCHAR},
+		       where_condition = #{whereCondition,jdbcType=CLOB},
+		       width = #{width,jdbcType=DECIMAL},
+		       height = #{height,jdbcType=DECIMAL},
+		       title = #{title,jdbcType=VARCHAR},
+		       delayed_loading_flag = #{delayedLoadingFlag,jdbcType=VARCHAR},
+		       expand_Method = #{expandMethod,jdbcType=CLOB},
+		       last_updated_by = #{lastUpdatedBy,jdbcType=DECIMAL},
+		       last_update_date = #{lastUpdateDate,jdbcType=DATE},
+		       last_update_login = #{lastUpdateLogin,jdbcType=DECIMAL},
+		       program_id = #{programId,jdbcType=DECIMAL},
+		       request_id = #{requestId,jdbcType=DECIMAL},
+		       attribute_category = #{attributeCategory,jdbcType=VARCHAR},
+		       attribute1 = #{attribute1,jdbcType=VARCHAR},
+		       attribute2 = #{attribute2,jdbcType=VARCHAR},
+		       attribute3 = #{attribute3,jdbcType=VARCHAR},
+		       attribute4 = #{attribute4,jdbcType=VARCHAR},
+		       attribute5 = #{attribute5,jdbcType=VARCHAR},
+		       attribute6 = #{attribute6,jdbcType=VARCHAR},
+		       attribute7 = #{attribute7,jdbcType=VARCHAR},
+		       attribute8 = #{attribute8,jdbcType=VARCHAR},
+		       attribute9 = #{attribute9,jdbcType=VARCHAR},
+		       attribute10 = #{attribute10,jdbcType=VARCHAR},
+		       attribute11 = #{attribute11,jdbcType=VARCHAR},
+		       attribute12 = #{attribute12,jdbcType=VARCHAR},
+		       attribute13 = #{attribute13,jdbcType=VARCHAR},
+		       attribute14 = #{attribute14,jdbcType=VARCHAR},
+		       attribute15 = #{attribute15,jdbcType=VARCHAR},
+		       object_version_number = object_version_number+1
+		 where flex_value_set_id = #{flexValueSetId,jdbcType=DECIMAL}
+	</update>
+	
+</mapper>	

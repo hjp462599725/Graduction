@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="hps.fnd.mapper.FlexValueMapper">
+	<resultMap type="hps.fnd.dto.FlexValue" id="BaseResult">
+		<id column="flex_value_id" property="flexValueId" jdbcType="DECIMAL" />
+		<result column="flex_value_set_id" property="flexValueSetId"
+			jdbcType="DECIMAL" />
+		<result column="Flex_Value" property="flexValue" jdbcType="VARCHAR" />
+		<result column="description" property="description" jdbcType="VARCHAR" />
+		<result column="Flex_Value_meaning" property="flexValueMeaning" jdbcType="VARCHAR" />
+		<result column="summary_flag" property="summaryFlag" jdbcType="VARCHAR" />
+		<result column="enabled_flag" property="enabledFlag" jdbcType="VARCHAR" />
+		<result column="data_source" property="dataSource" jdbcType="VARCHAR" />
+		<result column="start_date_active" property="startDateActive"
+			jdbcType="DATE" />
+		<result column="end_date_active" property="endDateActive"
+			jdbcType="DATE" />
+		<result column="Organization_Id" property="orgId" jdbcType="DECIMAL" />
+		<result column="OperateUnit_Name" property="operateUnitName" jdbcType="VARCHAR" />
+		
+	</resultMap>
+
+
+	<!-- 查询值集  
+	<select id="selectFlexValue" 
+		parameterType="java.lang.Long" resultMap="BaseResult">
+		 select m.flex_value_id,
+   				m.flex_value_set_id, 
+				m.Flex_Value,
+				m.Flex_Value_meaning,
+				m.summary_flag,
+				m.enabled_flag,
+				m.description,
+				m.start_date_active,
+				m.end_date_active
+				from hps_fnd_flex_value_b m
+		  where m.flex_value_set_id = #{flexValueSetId,jdbcType=DECIMAL}
+			and m.enabled_flag='Y'
+			and sysdate between nvl(m.start_date_active,sysdate) and nvl(m.end_date_active,sysdate)
+	</select>
+	-->
+	
+	<!-- 查询值集  
+	<select id="selectFlexValueById" 
+		parameterType="java.lang.Long" resultMap="BaseResult">
+		 select m.flex_value_id,
+    			m.flex_value_set_id, 
+				m.Flex_Value,
+				m.Flex_Value_meaning,
+				m.summary_flag,
+				m.enabled_flag,
+				m.description,
+				m.start_date_active,
+				m.end_date_active
+				from hps_fnd_flex_value_b m
+		  where m.flex_value_set_id = #{flexValueSetId,jdbcType=DECIMAL}
+	</select> -->
+	
+	<select  id="selectCountF" resultType="Integer">
+		  SELECT COUNT(0)
+			FROM hps_fnd_flex_value_b
+		   WHERE ${conditions}
+	</select>
+	
+	
+	<!-- author:dezhi.shen@hand-china.com 2016/9/7-->
+	<select id="selectFlexValuesByExm" resultMap="BaseResult" parameterType="hps.fnd.dto.FlexValue">
+		  SELECT m.flex_value_id,
+    	 		 m.flex_value_set_id, 
+		 		 m.flex_value,
+				 t.flex_value_meaning,
+				 m.summary_flag,
+				 m.enabled_flag,
+				 t.description,
+				 m.start_date_active,
+				 m.end_date_active
+		 	FROM hps_fnd_flex_value_b m
+	   LEFT JOIN hps_fnd_flex_value_tl t
+	          ON (t.flex_value_id = m.flex_value_id AND t.lang = #{request.locale,jdbcType=VARCHAR}) 
+		   WHERE 1 = 1
+		<if test="flexValue != null">
+	   		 AND m.flex_value like #{flexValue,jdbcType=VARCHAR}
+	    </if>
+		<if test="flexValueMeaning != null">
+	   		 AND m.flex_value_meaning like #{flexValueMeaning,jdbcType=VARCHAR}
+	    </if>
+	    <if test="description != null">
+	   		 AND m.description like #{description,jdbcType=VARCHAR}
+	    </if>
+	    <if test="flexValueSetId != null">
+	         AND m.flex_value_set_id = #{flexValueSetId,jdbcType=DECIMAL}
+	    </if>
+		<if test="flexValueId != null">
+	   		 AND m.flex_value_id = #{flexValueId,jdbcType=DECIMAL}
+	    </if>
+	    <if test="enabledFlag != null ">
+	    	 AND m.enabled_flag = #{enabledFlag,jdbcType=VARCHAR}
+	    </if>
+	</select>
+	
+	
+	<!-- author:dezhi.shen@hand-china.com 2016/9/7-->
+	<select id="selectEnableFlexValuesByExm" resultMap="BaseResult" parameterType="hps.fnd.dto.FlexValue">
+		  SELECT m.flex_value_id,
+    	 		 m.flex_value_set_id, 
+		 		 m.flex_value,
+				 t.flex_value_meaning,
+				 m.summary_flag,
+				 m.enabled_flag,
+				 t.description,
+				 m.start_date_active,
+				 m.end_date_active
+		 	FROM hps_fnd_flex_value_b m 
+		 	LEFT JOIN hps_fnd_flex_value_tl t
+	          ON (t.flex_value_id = m.flex_value_id AND t.lang = #{request.locale,jdbcType=VARCHAR}) 
+		   WHERE 1 = 1
+		     AND m.enabled_flag = 'Y'
+	    	 AND SYSDATE between NVL(m.start_date_active,SYSDATE) AND NVL(m.end_date_active,SYSDATE)
+		<if test="flexValue != null">
+	   		 AND m.flex_value like #{flexValue,jdbcType=VARCHAR}
+	    </if>
+	    <if test="flexValueSetId != null">
+	         AND m.flex_value_set_id = #{flexValueSetId,jdbcType=DECIMAL}
+	    </if>
+		<if test="flexValueId != null">
+	   		 AND m.flex_value_id = #{flexValueId,jdbcType=DECIMAL}
+	    </if>
+	    	 
+	</select>
+</mapper>	

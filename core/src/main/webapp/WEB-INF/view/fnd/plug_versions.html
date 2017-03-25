@@ -1,0 +1,129 @@
+<#include "../include/head.html">
+<body style="padding: 15px">
+	<div id="plug_versions" style="margin-left: 2px; margin-top: 2px;"></div>
+	<script type="text/javascript">
+
+	
+        function close() {
+        	var dialog = frameElement.dialog;
+            dialog.close();
+        }
+        var buttons = [];
+        buttons.push({
+            text : '<@spring.message "hps.close"/>',
+            id:'form_btn_close',
+            onclick : close
+        });
+          
+        //表单底部按钮 
+        Hap.addFormButtons(buttons);
+
+        window.plugsUpload = function (id) {
+            window.popWin = $.ligerDialog.open({
+                load  : false,
+                url : 'plugs_upload.html?sourceKey='+id,
+				height : 350,
+				width : 400,
+				isResize : true
+            });
+        }
+
+        plug_versions = $("#plug_versions").ligerGrid({
+            columns : [{
+                display : '<@spring.message "hps.fnd.plugs.version_number"/>',
+                name : 'versionNumber',
+                 width : 130,
+                align : 'left',
+                editor : {
+                    type : 'text'
+                },
+                validate:{
+                    required:true
+                }
+            }, {
+            	display : '<@spring.message "hps.fnd.lookup.enabled"/>',
+	            name : 'enabledFlag',
+	            width : 60,
+	            align : 'center',
+	            render : Hap
+				.createGridCheckBoxRender()
+            },{
+                display: '<@spring.message "hap.action"/>',
+                width  : 120,
+                align  : 'center',
+                render : function (rowdata) {
+                	if (!!rowdata.plugVersionId) {
+                		return '<a href="#" onclick="plugsUpload(' + rowdata.plugVersionId + ')"><@spring.message "hps.upload"/></a>'
+                    }
+                }
+            }],
+            showToggleColBtn : false,
+            width : '99%',
+            height : '89%',
+            enabledEdit : true,
+            url: '${base.contextPath}/fnd/upload/plugVersions/query?plugId=${RequestParameters.plugId}',
+            onAfterEdit:function(e){
+            	var versionNumber = e.record.versionNumber;
+            	var manager = $("#plug_versions").ligerGetGridManager();
+            	if(e.column.columnname == 'versionNumber' && e.record.__status =='add'){
+            		$.ajax({
+						url : '${base.contextPath}/fnd/plugVersions/onlyValidate?plugId=${RequestParameters.plugId}&versionNumber='+versionNumber,
+						type : 'post',
+						cache : false,
+						async : false,
+						success : function(data) {
+							if(data>0){
+								$.ligerDialog.error('<@spring.message "hps.fnd.plug.version.only_validate"/>');
+								e.record.versionNumber="";
+								manager.reRender();
+							}
+						}
+					});
+            	}else if(e.column.columnname == 'versionNumber' && e.record.__status =='update'){
+            		var plugVersionId = e.record.plugVersionId;
+            		$.ajax({
+						url : '${base.contextPath}/fnd/plugVersions/onlyValidate?plugId=${RequestParameters.plugId}&versionNumber='+versionNumber+'&plugVersionId='+plugVersionId,
+						type : 'post',
+						cache : false,
+						async : false,
+						success : function(data) {
+							if(data>0){
+								$.ligerDialog.error('<@spring.message "hps.fnd.plug.version.only_validate"/>');
+								e.record.versionNumber="";
+								manager.reRender();
+							}
+						}
+					});
+            	} 
+            	
+            },
+            toolbar : {
+                items : [ {
+                    text : '<@spring.message "hap.new"/>',
+                    disable : false,
+                    click : function() {
+                    	plug_versions.addRow({
+                    		enabledFlag : 'Y'
+                    	});
+                    },
+                    icon : 'add'
+                }, {
+                    line: true
+                }, {
+                    text : '<@spring.message "hap.save"/>',
+                    click: function () {
+                    	
+            				Hap.gridSave({
+            		              grid: plug_versions,
+            		               url : '${base.contextPath}/fnd/plugVersions/save?plugId=${RequestParameters.plugId}'
+            		        });
+            						
+                        
+                    },
+                    icon : 'save'
+                }]
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<#-- 
+ * description: 报表管理汇总界面
+ * version: 1.0 
+ * author:chengye.hu
+ * 
+-->
+<#include "../include/head.html">
+<link href="${base.contextPath}/resources/css/skins/icons.css" rel="stylesheet" type="text/css" />
+<body style="padding: 3px; overflow: hidden;">
+<form id="rpt_report_form"></form>
+<div id="rpt_report_grid" style="margin: 0; padding: 0"></div>
+<script type="text/javascript">
+	var roleId = "${Session.roleId}";
+    $(function () {
+        window['rpt_report_form'] = $("#rpt_report_form").ligerForm({
+            fields : [{
+                type   : 'text',
+                label  : '<@spring.message "hps.rpt.report.name"/>',
+                newline: false,
+                name   : 'reportName'
+            },{
+                type   : 'text',
+                label  : '<@spring.message "hps.rpt.report.code"/>',
+                newline: false,
+                name   : 'reportCode'
+            }],
+            buttons: [{
+                text    : '<@spring.message "hap.query"/>',
+                disabled: false,
+                width   : 60,
+                click   : function () {
+                    Hap.gridQuery({
+                        form: rpt_report_form,
+                        grid: rpt_report_grid
+                    })
+                }
+            }]
+        });
+		
+        window['rpt_report_grid'] = $("#rpt_report_grid").ligerGrid({
+            unSetValidateAttr: false,
+            columns          : [{
+                display: '<@spring.message "hps.rpt.report.id"/>',
+                name   : 'reportId',
+                align  : 'center',
+                width  : '14%'
+            }, {
+                display: '<@spring.message "hps.rpt.report.code"/>',
+                name   : 'reportCode',
+                align  : 'center',
+                width  : '14%'
+            }, {
+                display: '<@spring.message "hps.rpt.report.name"/>',
+                name   : 'reportName',
+                align  : 'center',
+                width  : '14%'
+            }, {
+                display: '<@spring.message "hps.rpt.report.discription"/>',
+                name   : 'discription',
+                align  : 'center',
+                width  : '14%'
+            }, {
+                display: '<@spring.message "hps.rpt.report.modify"/>',
+                width  : '14%',
+                align  : 'center',
+                render : function (rowdata) {
+                    return '<a href="#" onclick="editReport(' + rowdata.reportId + ')">修改</a>'
+                }
+            }],
+            url              : '${base.contextPath}/rpt/report/query',
+            toolbar          : {
+                items: [{
+                    text   : '<@spring.message "hap.new"/>',
+                    disable: false,
+                    click  : function () {
+                        parent.f_addTab('report456','报表新建界面','rpt/report.html');//window.location.href = 'report.html';
+                    },
+                    icon   : 'add'
+                }, {
+                    line: true
+                },{
+                    text   : '<@spring.message "hps.rpt.report.deploy"/>',
+                    disable: false,
+                    click  : function () {
+                    	var data = $.ligerui.get("rpt_report_grid").getSelectedRow();
+						if(data != null){
+							ParentFunctionQuery();
+						}else{
+							$.ligerDialog.error("未选择部署对象", $l("hap.tip.info"));
+						}
+                    },
+                    icon   : 'deploy'
+                }, {
+                    line: true
+                }]
+            },
+            enabledEdit      : true,
+            checkbox         : true,
+            width            : '100%',
+            height           : '99%'
+        });
+    });
+	function editReport(id){
+		parent.f_addTab('report123','报表修改界面','rpt/report_edit.html?reportId='+id);//window.location.href = 'report_edit.html?reportId='+id;
+	}
+	var ParentFunctionQuery = function() {
+				var parentFunctionId = null;
+				$.ligerDialog
+						.open({
+							url : 'parent_function.html',
+							title : '部署',
+							height : 450,
+							width : 700,
+							buttons : [
+									{
+										cls : 'l-dialog-btn-highlight',
+										text : '<@spring.message "hap.ok"/>',
+										onclick : function(item, dialog) {
+
+											var data = dialog.frame.$.ligerui
+													.get("functionGrid")
+													.getSelectedRow();
+											parentFunctionId = data.functionId;
+											//alert(parentFunctionId);
+											DeployReport({
+								                        grid: rpt_report_grid,
+								                           url: '${base.contextPath}/rpt/report/deploy?roleId='+roleId+'&parentFunctionId='+parentFunctionId
+								                       });
+	           								dialog.close();
+										}
+									},
+									{
+										text : '<@spring.message "hap.cancel"/>',
+										onclick : function(item, dialog) {
+											dialog.close();
+										}
+									} ],
+							isResize : true
+						});
+			}
+	  var DeployReport = function(options){
+	  var grid = options.grid;
+	  var rows = grid.getSelectedRows();
+	  if(rows.length==0 || grid.conn) return;
+	  grid.conn = $.ajax({
+	      url : options.url || '',
+	      type : "POST",
+	      dataType : "json",
+	      contentType : "application/json",
+	      data : JSON2.stringify(rows),
+	      success : function(json) {
+	     	  var names="";
+	     	  var o=json
+	     	  for(var n in o){
+	     	  	names+=o[n];
+	     	  }
+	          if(names=="true"){
+	          	$.ligerDialog.success("部署成功", $l("hap.tip.info"));
+	          }else{
+	          	$.ligerDialog.error("重新部署", $l("hap.tip.info"));
+	          }
+	          grid.conn = null;
+	      },
+	      error : function() {
+	          grid.conn = null;
+	          $.ligerDialog.closeWaitting();
+	      }
+  		});
+	} 
+</script>
+</body>
+</html>

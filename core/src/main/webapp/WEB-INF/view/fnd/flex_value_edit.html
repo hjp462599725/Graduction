@@ -1,0 +1,176 @@
+<#-- * description: 独立值集明细界面 * version: 1.0 *
+author:jie.yang03@hand-china.com * #{copyright}# * --> <#include
+"../include/head.html"> <#include "../include/hps.html">
+<body style="padding: 15px">
+	<form id="flexValueForm" method="post"
+		enctype="application/json;charset=UTF-8"></form>
+	<div id="flexValueGrid" style="margin-left: 2px; margin-top: 2px;"></div>
+	<script type="text/javascript">
+        function f_save() {
+            Hap.submitForm({
+                form:form,
+                grid:flexValueGrid,
+                gridName:'flexValues',
+                url:'${base.contextPath}/fnd/flexVset/sumitFlexVset',
+                success:function(json,opt){
+                    $.ligerDialog.success("<@spring.message "hap.tip.success"/>", '<@spring.message "hap.tip.info"/>', function(){
+                        parent.flexValueGrid.reload();
+                        f_cancel();
+                    });
+                }
+            });
+        }
+        function f_cancel() {
+            var dialog = frameElement.dialog;
+            dialog.close();
+        }
+        Hap.setFormDefaultBtn(f_cancel, f_save);
+        var flexValueForm = $("#flexValueForm");
+        var form  = flexValueForm.ligerForm({
+            inputWidth : 180,
+            fields : [{
+				display : '<@spring.message "hps.fnd.flexvalue.name"/>',
+				type : 'text',
+				name : 'flexValueSetName'
+            },{
+            	display : '<@spring.message "hps.fnd.flexvalue.validationtype"/>',
+                name : 'validationTypeMeaning',
+                type : 'text'
+            },{
+                display : '<@spring.message "hps.fnd.flexvalue.description"/>',
+                name : 'description',
+                type : 'text'
+            }],
+            onAfterSetFields:function(){
+            	liger.get('flexValueSetName').setDisabled();
+            	liger.get('validationTypeMeaning').setDisabled();
+            	liger.get('description').setDisabled();
+            }
+        });
+      	Hap.loadForm({form:form,url:'${base.contextPath}/fnd/flexVset/queryFlexVset',para:{flexValueSetId:${RequestParameters.flexValueSetId}}})
+  		//flexValueForm.attr("action", "${base.contextPath}/fnd/flexvalue/sumitFlexValueSet");
+        flexValueGrid = $("#flexValueGrid").ligerGrid({
+            columns : [{
+                display : '<@spring.message "hps.fnd.flexvalue.value"/>',
+                name : 'flexValue',
+                width : 190,
+                align : 'left',
+                editor : {
+                    type : 'text'
+                },
+                validate:{
+                    required:true
+                }
+            }, {
+                display : '<@spring.message "hps.fnd.flexvalue.name"/>',
+                name : 'flexValueMeaning',
+                width: 120,
+                align: 'left',
+                editor : {
+                	type : 'tl',
+                	dto : 'hps.fnd.dto.FlexValue',
+                	idField : 'flexValueId'
+                }
+            }, {
+                display : '<@spring.message "hps.fnd.flexvalue.description"/>',
+                name : 'description',
+                width: 120,
+                align: 'left',
+                editor : {
+                	type : 'tl',
+                	dto : 'hps.fnd.dto.FlexValue',
+                	idField : 'flexValueId'
+                }
+            },{
+            	display : '<@spring.message "hps.fnd.flexvalue.summaryflag"/>',
+	            name : 'summaryFlag',
+	            width : 80,
+	            align : 'center',
+	            render : Hap.createGridCheckBoxRender()
+            },{
+            	display : '<@spring.message "hps.fnd.flexvalue.enabledflag"/>',
+	            name : 'enabledFlag',
+	            width : 80,
+	            align : 'center',
+	            render : Hap.createGridCheckBoxRender()
+            },{
+            	display : '<@spring.message "hps.start_date_active"/>',
+                name : 'startDateActive',
+                width : 130,
+                align : 'left',
+                type : 'date',
+                editor : {
+                    type : 'date',
+                    options   : {
+                        showTime    : true,
+                        format      : "yyyy-MM-dd",
+                        onChangeDate: function(startDate){
+                        	var row = this.options.host_grid_row;
+                        	if(row.endDateActive&&new Date(row.endDateActive).getTime()<new Date(startDate).getTime()){
+                        		 $.ligerDialog.error("<@spring.message 'hfs.time.error'/>", $l("hap.tip.info"));
+                        		 this.setValue("");
+                        	}
+                        }
+                    }
+                }
+            },{
+            	display : '<@spring.message "hps.end_date_active"/>',
+                name : 'endDateActive',
+                width : 130,
+                align : 'left',
+                type : 'date',
+                editor : {
+                    type : 'date',
+                    options   : {
+                        showTime    : true,
+                        format      : "yyyy-MM-dd",
+                        onChangeDate: function (endDate){
+                        	var row = this.options.host_grid_row;
+                        	if(row.startDateActive&&new Date(endDate).getTime() < new Date(row.startDateActive).getTime()){
+                        		$.ligerDialog.error("<@spring.message 'hps.time.error'/>", $l("hap.tip.info"));
+               					this.setValue("");
+                        	}
+                        }
+                    }
+                }
+            }],
+            showToggleColBtn : false,
+            width : '100%',
+            height : '93%',
+            rowHeight : 24,
+            columnWidth : 100,
+            root: 'rows',
+            record: 'total',
+            mouseoverRowCssClass : null,
+            enabledEdit : true,
+            onBeforeEdit:function(e){
+				if(e.column.columnname == 'flexValue')
+					return e.record.__status == 'add';
+				return true;
+			},
+            url: '${base.contextPath}/fnd/flexValue/queryLookupValues?flexValueSetId=${RequestParameters.flexValueSetId!}', 
+            toolbar : {
+                items : [
+                {
+                	text : '<@spring.message "hap.new"/>',
+                    disable : false,
+                    click : function() {
+                    	flexValueGrid.addRow({
+                    		enabledFlag : 'Y'
+                    	});
+                    },
+                    icon : 'add'
+                },{
+                    line : true
+                },{
+					text : '<@spring.message "hap.clean"/>',
+					click : function() {
+						clearRow(flexValueGrid);
+					},
+					icon : 'clear'
+				}]
+            }
+        });
+        </script>
+</body>
+</html>

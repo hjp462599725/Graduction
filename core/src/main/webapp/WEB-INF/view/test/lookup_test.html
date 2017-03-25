@@ -1,0 +1,44 @@
+<#include "../include/head.html">
+<body style="padding: 10px; overflow: hidden;">
+<form id="lookupTestForm"></form>
+<!-- 取快码的方法 -->
+<script
+		src="${base.contextPath}/fnd/code?sourceData=HFS_FND_LOOKUP_TEST"
+		type="text/javascript">
+</script>
+<script
+		src="${base.contextPath}/fnd/code?sourceData1=HFS_FND_LOOKUP_TEST1"
+		type="text/javascript">
+</script>
+<script type="text/javascript">
+
+    $(function () {
+        window['lookupTestForm'] = $("#lookupTestForm").ligerForm({
+            fields     : [{
+                type    : 'combobox',
+                label   : '测试',
+                name    : 'name',
+                options : {
+					valueField : 'lookupCode',
+					textField : 'meaning',
+					//从上面取得的数据源
+					data : sourceData,
+					slide : true,
+                }
+            },{
+                type    : 'combobox',
+                label   : '测试',
+                name    : 'name1',
+                options : {
+					valueField : 'lookupCode',
+					textField : 'meaning',
+					//从上面取得的数据源
+					data : sourceData1,
+					slide : true,
+                }
+            }],
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,521 @@
+<#include "./include/head.html"> <#include "./include/hps.html">
+<body>
+	<link href="${base.contextPath}/resources/css/font-awesome.min.css"
+		rel="stylesheet" type="text/css" />
+	<link href="${base.contextPath}/resources/css/font-awesome.css"
+		rel="stylesheet" type="text/css" />
+	<!-- <link href="${base.contextPath}/resources/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+	<style>
+    html,body{
+        height:100%;
+    }
+    .l-topmenu {
+        margin: 0;
+        padding: 0;
+        background-color: #1063aa;
+        position: relative;
+        color: #ffffff;
+    }
+    
+    .l-topmenu-logo {
+        font-size: 18px;
+        line-height: 60px;
+        height: 60px;
+    }
+    
+    .l-topmenu-logo img, .l-topmenu-logo div {
+        float: left
+    }
+    
+    .l-topmenu-welcome {
+        position: absolute;
+        height: 24px;
+        line-height: 24px;
+        right: 30px;
+        top: 20px;
+    }
+    
+    .maindiv {
+        width: 22%;
+        height: 45%;   
+        border:1px dashed #ccc;
+        background: #FFFFFF;
+        float: left;
+        color:#999;
+        margin-left: 10px;
+        margin-top: 20px;
+        text-align: center;
+    }
+    
+    .maindiv:hover {
+        cursor: pointer;
+        color:#333;
+        border:1px solid #ccc;
+        -webkit-box-shadow:1px 1px 7px 1px rgba(128,128,128,0.3);
+        box-shadow:1px 1px 7px 1px rgba(128,128,128,0.3);
+    }
+    .card-icon {
+        font-size: 40px;
+    }
+    .divcontent {
+        font-size: 20px;
+        position: relative;
+        top: 40%;
+        text-align:center;
+    }
+    
+    .l-topmenu-btn {
+        position: absolute;
+        height: 36px;
+        right: 170px;
+        top: 21px;
+    }
+    
+    .l-topmenu-logout {
+        padding: 6px;
+        font-size: 12px;
+    }
+    </style>
+
+    <div id="line" style="width: 1000px;height:50px;"></div>
+    
+    为ECharts准备一个具备大小（宽高）的Dom
+    <div id="main" style="width: 1000px;height:500px;"></div>
+    <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('main'));
+        
+        var max=0;
+        // 指定图表的配置项和数据
+        //柱状图
+          var option = {
+            title: {
+                text: 'ECharts 柱状图',
+                //x:'center'
+            },
+            tooltip: {},
+            legend: {
+                data:['功能数量']
+            },
+            calculable : true,
+            toolbox: {
+                show : true,
+                feature : {
+                    mark : {show: true},
+                    dataView : {show: true, readOnly: false},
+                    magicType : {show: true, type: ['line', 'bar']},
+                    restore : {show: true},
+                    saveAsImage : {show: true}
+                }
+            },
+             xAxis: {
+                   axisLabel:{
+                    interval:0,
+                  //rotate:45,
+                  rotate:0,
+                  margin:2,
+                   textStyle:{
+                      color:"#222"
+                  }  
+              },   
+                 //data: ["衬衫","羊毛衫","雪纺衫","裤子","高跟鞋","袜子"] 
+               data: (function(){
+                    var arr=[];
+                    $.ajax({
+                    type : "post",
+                    async : false, //同步执行
+                    url : "${base.contextPath}/echart/histogram",
+                    data : {},
+                    dataType : "json", //返回数据形式为json
+                    success : function(json) {
+                      if (json) {
+                      for(var i=0;i<json.rows.length;i++){
+                    	 //alert(json.rows[i].functionName);
+                        arr.push(json.rows[i].functionName);
+                    }   
+                    }                                    
+                    },
+                    error : function(errorMsg) {
+                     alert("不好意思,图表请求数据失败啦!");
+                        myChart.hideLoading();
+                    }
+                    })
+                       return arr;
+                  })()    
+            },
+             yAxis:{
+            	
+            }, 
+            series: [{
+                name: '功能数量',
+                type: 'bar',
+                barWidth:20,
+                //data:[5,20,36,10,10,20]
+                   'data':(function(){
+                    var arr=[];
+                        $.ajax({
+                        type : "post",
+                        async : false, //同步执行
+                        url : "${base.contextPath}/echart/histogram",
+                        data : {},
+                        dataType : "json", //返回数据形式为json
+                        success : function(json) {
+                        if (json) {
+                               for(var i=0;i<json.rows.length;i++){
+                            	   //alert("ok3");
+                              	 //alert(json.rows[i].saleVolume);
+                              	 max=max+json.rows[i].fnCount;
+                                 arr.push(json.rows[i].fnCount);
+                                }    
+                        }                                       
+                    },
+                    error : function(errorMsg) {
+                        alert("不好意思,图表请求数据失败啦!");
+                        myChart.hideLoading();
+                    }
+                   })
+                   return arr;
+                })()      
+            }]
+        }; 
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+    </script>
+    
+    <div id="main" style="width: 1000px;height:500px;"></div>
+        <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var plugChart = echarts.init(document.getElementById('main'));
+        
+       	// 求和
+        var sum = 0;
+        
+        // 指定图表的配置项和数据
+        //饼图
+        var option={
+            title: {
+                 text: '共享插件分布情况',
+                 x:'center'
+            },	
+            tooltip : {
+                trigger: 'item',
+                formatter: "{a} <br/>{b} : {c} ({d}%)"
+            },
+            legend: {
+                orient : 'vertical',
+                x : 'left',
+                data: (function(){
+                    var arr=[];
+                    $.ajax({
+                    type : "post",
+                    async : false, //同步执行
+                    url : "${base.contextPath}/fnd/plugCount/query",
+                    data : {},
+                    dataType : "json", //返回数据形式为json
+                    success : function(json) {
+                      if (json) {
+                      for(var i=0;i<json.rows.length;i++){
+                        arr.push(json.rows[i].plugTypeName);
+                    }   
+                    }                                    
+                    },
+                    error : function(errorMsg) {
+                     alert("不好意思,图表请求数据失败啦!");
+                     plugChart.hideLoading();
+                    }
+                    })
+                       return arr;
+                  })() 
+            },
+            toolbox: {
+                show : true,
+                feature : {
+                    mark : {show: true},
+                    dataView : {show: true, readOnly: false},
+                    magicType : {
+                        show: true, 
+                        type: ['pie', 'funnel'],
+                        option: {
+                            funnel: {
+                                x: '25%',
+                                width: '50%',
+                                funnelAlign: 'left',
+                                max: sum
+                            }
+                        }
+                    },
+                    restore : {show: true},
+                    saveAsImage : {show: true}
+                }
+            },
+            calculable : true,
+            series : [
+                {
+                    name: '功能数量',
+                    type: 'pie',
+                    radius: '55%',                    
+                        'data':(function(){
+                        var arr=[];
+                            $.ajax({
+                            type : "post",
+                            async : false, //同步执行
+                            url : "${base.contextPath}/fnd/plugCount/query",
+                            data : {},
+                            dataType : "json", //返回数据形式为json
+                            success : function(json) {
+                            if (json) {
+                                   for(var i=0;i<json.rows.length;i++){
+                                	   
+                                	   arr.push({
+                                           name: json.rows[i].plugTypeName,
+                                           value: json.rows[i].plugTypeQty
+                                           });    
+                                	   sum = sum + json.rows[i].plugTypeQty;
+                                    }    
+                            }                                       
+                        },
+                        error : function(errorMsg) {
+                            alert("不好意思,图表请求数据失败啦!");
+                            plugChart.hideLoading();
+                        }
+                       })
+                       return arr;
+                    })()         
+                }]
+        };
+
+        // 使用刚指定的配置项和数据显示图表。
+        plugChart.setOption(option);
+    </script> -->
+	<style type="text/css">
+.box {
+	width: 200px;
+	height: 150px;
+	border: 1px solid #bbb;
+	border-style: dashed;
+	float: left;
+	margin: 5px;
+	line-height: 30px;
+	text-align: center;
+	cursor: pointer;
+	font-size: 20px;
+	z-index: 4;
+}
+
+.box:hover {
+	font-size: 22px;
+}
+
+.addBox {
+	width: 200px;
+	height: 150px;
+	border: 1px solid #bbb;
+	border-style: dashed;
+	float: left;
+	margin: 5px;
+	cursor: pointer;
+	z-index: 4;
+}
+
+.delImg {
+	width: 23px;
+	height: 23px;
+	position: relative;
+	top: 2px;
+	margin-left: 172px;
+}
+
+.delImg:hover {
+	width: 25px;
+	height: 25px;
+}
+
+.addBox:hover .img {
+	width: 51px;
+	height: 51px;
+}
+
+.dom {
+	float: left;
+	left: 20px;
+	position: absolute;
+	top: 20px;
+}
+</style>
+	<div id="dom" class="dom">
+		<div id="addBox" class="addBox" onclick="addNode()">
+			<img class="img" src="${base.contextPath}/resources/images/add.png"
+				style="position: relative; left: 78px; top: 52px;" />
+		</div>
+	</div>
+	<script type="text/javascript">
+		var dataArray = [];
+		var flag = null;
+		$(function() {
+			reload();
+		});
+		function reload() {
+			$.ajax({
+				type : "POST",
+				data : {
+					flag : flag,
+					array : JSON2.stringify(dataArray)
+				},
+				url : '${base.contextPath}/fnd/roleFunction/update',
+				cache : false,
+				dataType : 'json',
+				async : true,
+				success : function(data) {
+					//alert("data:" + JSON2.stringify(data));
+					dataArray = data;
+					init(dataArray);
+				},
+				error : function() {
+					console.log('error!');
+				}
+			});
+		}
+		function init(dataArray) {
+			var dom = document.getElementById("dom");
+			$(".box").remove();
+			var len = dataArray.length;
+			for (var i = 0; i < len; i++) {
+				var newBox = document.createElement("div");
+				newBox.setAttribute("class", "box");
+				newBox.setAttribute("id", "box" + i);
+				var icon = document.createElement("div");
+				icon.setAttribute("class", dataArray[i].functionIcon);
+				var nul = document.createElement("div");
+				var txt = document.createTextNode(dataArray[i].functionName);
+
+				var newImg = document.createElement("img");
+				newImg.setAttribute("class", "delImg");
+				newImg.setAttribute("id", "img" + i);
+				newImg.setAttribute("style", "visibility:hidden");
+				newImg.setAttribute("src",
+						"${base.contextPath}/resources/images/del.png");
+
+				var newInput1 = document.createElement("input");
+				newInput1.setAttribute("type", "hidden");
+				newInput1.setAttribute("name", "number");
+				newInput1.setAttribute("value", i);
+				var newInput2 = document.createElement("input");
+				newInput2.setAttribute("type", "hidden");
+				newInput2.setAttribute("name", "functionCode");
+				newInput2.setAttribute("value", dataArray[i].functionCode);
+				var newInput3 = document.createElement("input");
+				newInput3.setAttribute("type", "hidden");
+				newInput3.setAttribute("name", "functionName");
+				newInput3.setAttribute("value", dataArray[i].functionName);
+				var newInput4 = document.createElement("input");
+				newInput4.setAttribute("type", "hidden");
+				newInput4.setAttribute("name", "resourceId");
+				newInput4.setAttribute("value", dataArray[i].resourceId);
+				var newInput5 = document.createElement("input");
+				newInput5.setAttribute("type", "hidden");
+				newInput5.setAttribute("name", "url");
+				newInput5.setAttribute("value", dataArray[i].url);
+				var newInput6 = document.createElement("input");
+				newInput6.setAttribute("type", "hidden");
+				newInput6.setAttribute("name", "functionIcon");
+				newInput6.setAttribute("value", dataArray[i].functionIcon);
+
+				newBox.appendChild(newImg);
+				newBox.appendChild(icon);
+				newBox.appendChild(nul);
+				newBox.appendChild(txt);
+				newBox.appendChild(newInput1);
+				newBox.appendChild(newInput2);
+				newBox.appendChild(newInput3);
+				newBox.appendChild(newInput4);
+				newBox.appendChild(newInput5);
+				newBox.appendChild(newInput6);
+				dom.insertBefore(newBox,
+						dom.childNodes[dom.childNodes.length - 2]);
+			}
+			$("div.box").bind(
+					"click",
+					function() {
+						var str = $(this).attr("id");
+						var index = str.substr(3, str.length - 1);
+						var function_code = document
+								.getElementsByName("functionCode");
+						var function_name = document
+								.getElementsByName("functionName");
+						var resource_id = document
+								.getElementsByName("resourceId");
+						var url = document.getElementsByName("url");
+						parent.f_addTab(function_code[index].value,
+								function_name[index].value, url[index].value);
+					});
+			$("img.delImg").bind("click", function(event) {
+				event.stopPropagation();
+				flag = "functionUpdate";
+				var str = $(this).attr("id");
+				var index = str.substr(3, str.length - 1);
+				dataArray.splice(index, 1);
+				reload();
+			});
+			$("div.box").hover(function() {
+				var str = $(this).attr("id");
+				var index = str.substr(3, str.length - 1);
+				var currentImg = document.getElementById("img" + index);
+				currentImg.style.visibility = "visible";
+			}, function() {
+				var str = $(this).attr("id");
+				var index = str.substr(3, str.length - 1);
+				var currentImg = document.getElementById("img" + index);
+				currentImg.style.visibility = "hidden";
+			});
+		}
+		function addNode() {
+			window.popWin = $.ligerDialog.open({
+				load : false,
+				width : 580,
+				height : 400,
+				title : '快捷功能列表',
+				url : 'fnd/function_shortcut.html',
+				buttons : [ {
+					cls : 'l-dialog-btn-highlight',
+					text : '添加',
+					onclick : function(item, dialog) {
+						var obj = {
+							"resourceId" : dialog.frame.resourceId,
+							"functionCode" : dialog.frame.functionCode,
+							"functionName" : dialog.frame.functionName,
+							"url" : dialog.frame.url,
+							"functionIcon" : dialog.frame.functionIcon,
+						};
+						if (obj.resourceId != null) {
+							validate(obj);
+						}
+						dialog.close();
+						if (flag != null) {
+							reload();
+						}
+					}
+				}, {
+					text : '<@spring.message "hap.cancel"/>',
+					onclick : function(item, dialog) {
+						dialog.close();
+					}
+				} ]
+			});
+		}
+		function validate(obj) {
+			var checkFlag = null;
+			for (var i = 0; i < dataArray.length; i++) {
+				if (dataArray[i].resourceId == obj.resourceId) {
+					checkFlag = 1;
+					$.ligerDialog.warn('该功能已添加快捷方式', 'Tip', function() {
+						$.ligerDialog.close();
+					});
+				}
+			}
+			if (checkFlag == null) {
+				dataArray.push(obj);
+				flag = 'functionUpdate';
+			}
+		}
+	</script>
+</body>

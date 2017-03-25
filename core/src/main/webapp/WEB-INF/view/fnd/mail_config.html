@@ -1,0 +1,164 @@
+<#-- 
+ * description: 消息配置
+ * version: 1.0 
+ * author:yanjie.zhang@hand-china.com
+ * 
+-->
+<#include "../include/head.html">
+<#include "../include/hps.html">
+<body style="padding: 3px;">
+ 	
+	<form id="mailConfig_form"></form>
+	<div id="mailConfig_grid" style="margin: 0; padding: 0"></div>
+
+<script type="text/javascript">
+	
+    $(function () {
+       window['mailConfig_form'] = $("#mailConfig_form").ligerForm({
+       		fields : [{
+				type : 'text',
+				label : '配置代码',
+				newline : false,
+				name : 'mailConfigCode'
+			},{
+				type : 'text',
+				label : '发件地址',
+				newline : false,
+				name : 'mailAddress'
+			},{
+				type : 'text',
+				label : '用户名',
+				newline : false,
+				name : 'userName'
+			}], 
+			labelWidth : 100,
+			space   : 0,
+			inputWidth : 150,
+			buttons : [ {
+				text : '<@spring.message "hap.query"/>',
+				disabled : false,
+				width : 60,
+				click : function() {
+					Hap.gridQuery({
+						form : mailConfig_form,
+						grid : mailConfig_grid
+					})
+				}
+			}, {
+				text : '<@spring.message "hap.reset"/>',
+				disabled : false,
+				width : 60,
+				click : function() {
+					mailConfig_form.reset();
+				}
+			} ],
+			});
+      
+  	
+  	   	
+  	   	var mailConfig_grid = window['mailConfig_grid'] = $("#mailConfig_grid").ligerGrid({
+           unSetValidateAttr: false,
+           columns          : [{
+               display: '配置代码',
+               name   : 'mailConfigCode',
+               align  : 'center',
+               width  : 150,
+               editor : {
+                   type: 'text'
+               },
+               validate:{
+                   required:true
+               }
+           },{
+               display: '发送服务器',
+               name   : 'host',
+               align  : 'center',
+               width  : 150,
+               editor : {
+                   type: 'text'
+               },
+               validate:{
+                   required:true
+               }
+           },{
+               display: '端口',
+               name   : 'port',
+               align  : 'center',
+               width  : 120,
+               editor : {
+                   type: 'text'
+               },
+               validate:{
+                   required:true
+               }
+           },{
+               display: '发件地址',
+               name   : 'mailAddress',
+               align  : 'center',
+               width  : 150,
+               editor : {
+                   type: 'text'
+               }
+           },{
+               display: '用户名',
+               name   : 'userName',
+               align  : 'center',
+               width  : 150,
+               editor : {
+                   type: 'text'
+               }
+           },{
+               display: '密码',
+               name   : 'password',
+               align  : 'center',
+               width  : 150,
+               editor : {
+                   type: 'text'
+               }
+           },{
+               display: '启用',
+               name   : 'enabledFlag',
+               align  : 'center',
+               width  : 120,
+               render: Hap.createGridCheckBoxRender()
+           }],
+            toolbar : {  	
+			items : [ {
+				text   : '<@spring.message "hap.new"/>',
+                   disable: false,
+                   click  : function () {
+                   		mailConfig_grid.addRow({
+                   			enabledFlag : 'Y'
+                   		});  	   
+                   },	                
+				icon : 'add'
+			}, {
+                text : '<@spring.message "hap.save"/>',
+                click: function () {
+                     Hap.gridSave({
+                         grid: mailConfig_grid,
+                         url : '${base.contextPath}/fnd/mailConfig/submit',
+                     })
+                    },
+                    icon : 'save'
+                }, {
+                   line: true
+               }, {
+                   text : '<@spring.message "hap.clean"/>',
+                   click: function () {
+						clearRow(mailConfig_grid);
+                   },
+                   icon : 'clear'
+               }]
+	       },
+	       url              : '${base.contextPath}/fnd/mailConfig/query',
+           enabledEdit      : true,
+           width            : '99%',
+           height           : '99%',
+           checkbox         : false
+        });
+
+   })
+</script>
+</body>
+</html>

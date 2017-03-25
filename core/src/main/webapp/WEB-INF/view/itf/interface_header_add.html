@@ -1,0 +1,179 @@
+<#include "../include/head.html">
+<link href="${base.contextPath}/resources/css/skins/icons.css" rel="stylesheet" type="text/css" />
+<script src="${base.contextPath}/resources/js/itf.js"></script>
+<body style="padding: 10px; overflow: hidden;">
+<form id="itfHeaderAddForm"></form>
+<script type="text/javascript">
+    $(function () {
+    	function f_save() {
+            Hap.submitForm({
+                form:itfHeaderAddForm,
+                url:'${base.contextPath}/itf/header/submit',
+                success:function(json,opt){
+                    $.ligerDialog.success('<@spring.message "hap.tip.success"/>', '<@spring.message "hap.tip.info"/>', function(){
+                        parent.itfHeaderGrid.reload();
+                        f_cancel();
+                    });
+                }
+            });
+        }
+        function f_cancel() {
+            var dialog = frameElement.dialog;
+            dialog.close();
+        }
+        //表单底部按钮 
+        Hap.setFormDefaultBtn(f_cancel, f_save); 
+        
+        window['itfHeaderAddForm'] = $("#itfHeaderAddForm").ligerForm({
+            fields     : [{
+                type    : 'text',
+                label   : '<@spring.message "hps.itf.header.code"/>',
+                name    : 'serviceCode',
+                typeCase: 'uppercase',
+                labelAlign : 'center',
+                validate : {
+                	required : true
+                },
+                group	: '<@spring.message "hps.itf.basic"/>'
+            },{
+            	type   : 'hidden',
+            	name   : 'enableFlag',
+            	options: {
+            		value : 'Y'
+            	}
+            },{
+                label  : '<@spring.message "hps.itf.meaning"/>',
+                name   : 'meanning',
+                labelAlign : 'center',
+                newline: false,
+                type : 'tl',
+                options : {
+                    idField:'serviceHeaderId',
+                    dto:'hps.itf.dto.ItfServiceHeader'
+                },
+                validate : {
+                	required : true
+                }
+            },{
+            	type   : 'select',
+                label  : '<@spring.message "hps.itf.header.servicetype"/>',
+                labelAlign : 'center',
+                name   : 'serviceType',
+                options	: {
+                	valueField : 'ID',
+	                textField : 'text',
+	                data : [ {
+	                    ID : 'REST',
+	                    text : 'REST'
+	                }, {
+	                    ID : 'SOAP',
+	                    text : 'SOAP'
+	                } ]
+                },
+                validate : {
+                	required : true
+                }
+            },{
+            	type   : 'text',
+                label  : '<@spring.message "hps.itf.header.domainurl"/>',
+                name   : 'domainUrl',
+                labelAlign : 'center',
+                validate : {
+                	required : true
+                },
+                newline: false
+            },{
+                label  : '<@spring.message "hps.itf.description"/>',
+                labelAlign : 'center',
+                name   : 'description',
+                type : 'tl',
+                options : {
+                    idField:'serviceHeaderId',
+                    dto:'hps.itf.dto.ItfServiceHeader'
+                }
+            },{
+            	type   : 'select',
+                label  : '<@spring.message "hps.itf.header.requestformat"/>',
+                labelAlign : 'center',
+                name   : 'requestFormat',
+                options	: {
+                	valueField : 'ID',
+	                textField : 'text',
+	                data : [ {
+	                    ID : 'raw',
+	                    text : 'raw'
+	                } ]
+                },
+                validate : {
+                	required : true
+                },
+                newline: false
+            },{
+            	type   : 'text',
+                label  : '<@spring.message "hps.itf.header.requestcontenttype"/>',
+                labelAlign : 'center',
+                name   : 'requestContenttype'
+            },{
+            	type   : 'text',
+                label  : '<@spring.message "hps.itf.header.requestaccept"/>',
+                labelAlign : 'center',
+                name   : 'requestAccept',
+                newline: false
+            },{
+            	type   : 'checkbox',
+                label  : '<@spring.message "hps.itf.header.authflag"/>',
+                labelAlign : 'center',
+                name   : 'authFlag',
+                options: {
+                	checkValue : 'Y',
+                	uncheckValue : 'N',
+	                onChange : function() {
+	                	if(liger.get('authFlag').getValue() == 'Y'){
+	                		liger.get('authUsername').setEnabled();
+	        	            liger.get('authPassword').setEnabled();
+	                	}else if(liger.get('authFlag').getValue() == 'N'){
+	                		liger.get('authUsername').setValue('');
+	        	            liger.get('authPassword').setValue('');
+	                		liger.get('authUsername').setDisabled();
+	        	            liger.get('authPassword').setDisabled();
+	                	}
+					}
+                },
+                group  : '<@spring.message "hps.itf.extend"/>'
+            },{
+            	type   : 'text',
+                label  : '<@spring.message "hps.itf.header.authusername"/>',
+                labelAlign : 'center',
+                name   : 'authUsername'
+            },{
+            	type   : 'text',
+                label  : '<@spring.message "hps.itf.header.authpassword"/>',
+                labelAlign : 'center',
+                name   : 'authPassword',
+                newline: false
+            },{
+            	type   : 'text',
+                label  : '<@spring.message "hps.itf.header.namespace"/>',
+                labelAlign : 'center',
+                name   : 'namespace'
+            },{
+            	type   : 'textarea',
+                label  : '<@spring.message "hps.itf.header.bodyheader"/>',
+                labelAlign : 'center',
+                name   : 'bodyHeader'
+            },{
+            	type   : 'textarea',
+                label  : '<@spring.message "hps.itf.header.bodytail"/>',
+                labelAlign : 'center',
+                name   : 'bodyTail',
+                newline: false
+            }],
+            onAfterSetFields : function() {
+            	liger.get('authUsername').setDisabled();
+	            liger.get('authPassword').setDisabled();
+			}
+        });
+    });
+</script>
+</body>
+</html>

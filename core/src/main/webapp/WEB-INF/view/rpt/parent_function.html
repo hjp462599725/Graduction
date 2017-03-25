@@ -1,0 +1,74 @@
+<#-- 
+ * description: 父级功能选择界面
+ * version: 1.0 
+ * author:chengye.hu
+ * 
+-->
+<#include "../include/head.html">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<body style="padding: 10px; overflow: hidden;">
+
+<form id="functionForm"></form>
+<div id="functionGrid" style="margin: 0; padding: 0;"></div>
+<script type="text/javascript">
+    $(function () {
+    	window['functionForm'] = $("#functionForm").ligerForm({
+	    	fields : [{
+	                type   : 'text',
+	                label  : '<@spring.message "function.functioncode"/>',
+	                newline: false,
+	                name   : 'functionCode'
+	            },{
+	                type   : 'text',
+	                label  : '<@spring.message "function.functionname"/>',
+	                newline: false,
+	                name   : 'functionName'
+	            }],
+	            buttons: [{
+	                text    : '<@spring.message "hap.query"/>',
+	                disabled: false,
+	                width   : 60,
+	                click   : function () {
+	                    Hap.gridQuery({
+	                        form: functionForm,
+	                        grid: functionGrid
+	                    })
+	                }
+	            },{             
+                    text    : '<@spring.message "hap.reset"/>',
+                    disabled: false,
+                    width   : 60,
+                    click   : function () {
+                        functionForm.reset();
+                    }
+            }]
+	        });
+
+        window['functionGrid'] = $("#functionGrid").ligerGrid({
+            unSetValidateAttr: false,
+            columns          : [{
+                display : '<@spring.message "function.functioncode"/>',
+                name    : 'functionCode',
+                align   : 'center',
+                width   : 200
+            }, {
+                display: '<@spring.message "function.functionname"/>',
+                name   : 'functionName',
+                align  : 'center',
+                width  : 350
+            }, {
+                name   : 'functionId',
+                hide : true
+            }],
+            url: '${base.contextPath}/sys/function/query',
+            checkbox : true,
+            isSingleCheck : true, 
+            enabledEdit      : false,
+            width : '99%',
+            height : '99%',
+        });
+    });
+</script>
+</body>
+</html>

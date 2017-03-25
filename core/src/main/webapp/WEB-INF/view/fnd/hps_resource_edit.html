@@ -1,0 +1,446 @@
+<#include "../include/head.html">
+<#include "../include/hps.html">
+		<body style="padding: 15px">
+		<form id="resourceform" method="post" enctype="application/json;charset=UTF-8"></form>
+		<div id="resourceItemGrid" style="margin-left: 2px; margin-top: 2px;"></div>
+		<script type="text/javascript">
+			function gridImportDisable(gridName){
+				var obj=$("#"+gridName).find("div.l-icon.l-icon-import").parent();
+				obj.attr("class","none").attr("class","l-toolbar-item l-panel-btn l-toolbar-item-hasicon l-toolbar-item-disable");
+			}
+			function f_save() {
+				Hap.submitForm({
+					form:resourceform,
+					grid:resourceItemGrid,
+					gridName:'resourceItems',
+					url:'${base.contextPath}/fnd/hpsResource/sumit',
+					success:function(json,opt){
+						$.ligerDialog.success("<@spring.message "hap.tip.success"/>", '<@spring.message "hap.tip.info"/>', function(){
+							parent.resourceGrid.reload();
+							f_cancel();
+						});
+
+					}
+				});
+			}
+			function f_cancel() {
+				var dialog = frameElement.dialog;
+				dialog.close();
+			}
+			<#assign isedit = (RequestParameters.isedit!'0')/>
+
+			Hap.setFormDefaultBtn(f_cancel, f_save);
+
+			
+			window['resourceform'] = $("#resourceform").ligerForm({
+				inputWidth : 180,
+				fields : [{
+					name:'fndResourceId',
+					type:'hidden'
+				},{
+					display : '<@spring.message "resource.url"/>',
+					type : 'text',
+					name : 'resourceUrl'
+
+				},{
+					display : '<@spring.message "resource.name"/>',
+					name : 'resourceName',
+					type : 'text'
+
+
+
+				},{
+					display : '<@spring.message "hap.description"/>',
+					name : 'comments',
+					type : 'text'
+
+				}],
+
+
+				onAfterSetFields:function(){
+					liger.get('resourceUrl').setDisabled();
+					liger.get('resourceName').setDisabled();
+					liger.get('comments').setDisabled();
+				}
+			});
+
+			resourceform.attr("action", "${base.contextPath}/fnd/hpsResource/sumit");
+
+			resourceItemGrid = $("#resourceItemGrid").ligerGrid({
+						columns : [{
+							display : '<@spring.message "hps.fnd.lookup.code"/>',
+							name : 'itemCode',
+							width : 120,
+							align : 'left',
+							editor : {
+								type : 'text'
+							}
+						},{
+							display : '<@spring.message "hps.fnd.resource.data_source"/>',
+							name : 'itemRegion',
+							width: 120,
+							align: 'left',
+							editor : {
+								type : 'text',
+							}
+						},{
+							display : '<@spring.message "resource.type"/>',
+							name : 'itemType',
+							width: 120,
+							align: 'left',
+							editor : {
+								type : 'text'
+							}
+						}, {
+							display : '<@spring.message "hps.fnd.lookup.description"/>',
+							name : 'itemDescription',
+							width: 120,
+							align: 'left',
+							editor : {
+								type : 'text'
+							}
+						},{
+							display : '<@spring.message "hps.enabled_flag"/>',
+							name : 'enabledFlag',
+							width : 80,
+							align : 'center',
+							render : Hap
+									.createGridCheckBoxRender()
+						},{
+							display : '<@spring.message "hps.start_date_active"/>',
+							name : 'startDateActive',
+							width : 130,
+							align : 'left',
+							type   : 'date',
+							format : "yyyy-MM-dd",
+							editor : {
+								type : 'date',
+								showTime    : true,
+								format      : "yyyy-MM-dd",
+								onChangeDate: function(startDate){
+				                    var row = this.options.host_grid_row;
+				                    if(row.endDateActive&&new Date(row.endDateActive).getTime()<new Date(startDate).getTime()){
+				                    	 $.ligerDialog.error("<@spring.message 'hps.time.error'/>", $l("hap.tip.info"));
+				                    		this.setValue("");
+				                    }
+								}
+							}
+						},{
+							display : '<@spring.message "hps.end_date_active"/>',
+							name : 'endDateActive',
+							width : 130,
+							align : 'left',
+							type   : 'date',
+							format : "yyyy-MM-dd",
+							editor : {
+								type : 'date',
+								showTime    : true,
+								format      : "yyyy-MM-dd",
+								onChangeDate: function (endDate){
+				                	var row = this.options.host_grid_row;
+				                    if(row.startDateActive&&new Date(endDate).getTime() < new Date(row.startDateActive).getTime()){
+				                    	$.ligerDialog.error("<@spring.message 'hps.time.error'/>", $l("hap.tip.info"));
+				           				this.setValue("");
+				                    }
+				                }
+								
+							}
+						}],
+						width : '100%',
+						height : '93%',
+						root: 'rows',
+						record: 'total',
+						dataAction:'local',
+						enabledEdit : true,
+
+						onBeforeEdit:function(e){
+							if(e.column.columnname == 'itemCode')
+								return e.record.__status == 'add';
+							return true;
+						},
+					<#if isedit == '1'>
+			url: '${base.contextPath}/fnd/hpsResourceItem/query?fndResourceId=${RequestParameters.fndResourceId!}',
+			 onSuccess:function(data){
+				 /* if(data.rows.length > 0){
+					 gridImportDisable("resourceItemGrid");
+				 } */
+				
+			},
+			</#if>
+			toolbar : {
+				items : [ {
+					text : '<@spring.message "hap.new"/>',
+					disable : false,
+					click : function() {
+						resourceItemGrid.addRow({
+							enabledFlag : 'Y'
+						});
+					},
+					icon : 'add'
+				}, {
+					line : true
+				},{
+					text : '<@spring.message "hap.clean"/>',
+					click : function() {
+						clearRow(resourceItemGrid);
+					},
+					icon : 'clear'
+					//img:'${base.contextPath}/resources/images/clear.png'
+				},
+					{
+						line : true
+					},{
+						text : '导入',
+						click : function(){
+							var manager = $("#resourceItemGrid").ligerGetGridManager();
+							var data = null;
+							var forms = null;
+							var grids = null;
+							$.ajax({
+								url : '${base.contextPath}/fnd/hpsResource/import?url=${RequestParameters.url!}',
+								type : 'post',
+								cache : false,
+								async : false,
+								success : function(json) {
+									forms = json.form;
+									grids = json.grid;
+									$.ajax({
+										url : '${base.contextPath}/fnd/hpsResourceItem/query?fndResourceId=${RequestParameters.fndResourceId!}',
+										type : 'post',
+										cache : false,
+										async : false,
+										success : function(jsonA) {
+											data = jsonA.rows;
+										}
+									});
+								}
+							});
+							
+							$.ligerDialog.tip({
+								url : '${base.contextPath}/${RequestParameters.url}',
+								height : 400,
+								width : 600,
+								title : '预览:是否导入此页面',
+								buttons : [
+									{
+										cls : 'l-dialog-btn-highlight',
+										text : '是，导入',
+										onclick : function(item, dialog) {
+											
+											for(var m = 0;m<forms.length;m++){
+												var form = dialog.frame.$.ligerui.get(forms[m]);
+												//判断form里是否存在元素
+												if(form.options.fields != null){
+													//定义一个变量用来接收判断结果
+													var count = 0;
+													var tempField = form.options.fields.length;
+													if(data.length == 0){
+														for(var i=0;i<tempField;i++){
+															var field = form.getField(i);
+															manager.addRow({
+																itemCode  : form.getField(i).name,
+																itemDescription: form.getField(i).display,
+																itemRegion : forms[m],
+																itemType : form.getField(i).type,
+																enabledFlag:'Y',
+															});
+														}
+													}else{
+														for(var i=0;i<tempField;i++){
+															for(var x = 0;x<data.length;x++){
+																if(data[x].itemCode == form.getField(i).name &&　data[x].itemRegion == forms[m]){
+																	count =count+1;
+																	manager.data.rows[x].itemDescription = form.getField(i).display;
+																	manager.data.rows[x].itemType = form.getField(i).type;
+																	manager.reRender();
+																}
+																
+															}
+															if(count == 0){
+																manager.addRow({
+																	itemCode  : form.getField(i).name,
+																	itemDescription: form.getField(i).display,
+																	itemRegion : forms[m],
+																	itemType : form.getField(i).type,
+																	enabledFlag:'Y',
+																});
+															}
+														}
+														
+													}
+													
+												}
+												
+												if(form.options.buttons != null){
+													//定义一个变量用来接收判断结果
+													var count = 0;
+													var tempBtn = form.options.buttons.length;
+													if(data.length == 0){
+														for(var j=0;j<tempBtn;j++){
+															manager.addRow({
+																itemCode  : form.options.buttons[j].id,
+																itemDescription: form.options.buttons[j].text,
+																itemRegion : forms[m],
+																itemType : 'button',
+																enabledFlag:'Y',
+															});
+														}
+													}else{
+														for(var j=0;j<tempBtn;j++){
+															for(var x = 0;x<data.length;x++){
+																//判断导入数据和已存在数据是否有相同地方
+																if(data[x].itemCode == form.options.buttons[j].id &&　data[x].itemRegion == forms[m]){
+																	count =count+1;
+																	manager.data.rows[x].itemDescription = form.options.buttons[j].text;
+																	manager.reRender();
+																}
+																
+															}
+															//没有相同的源数据，新增
+															if(count == 0){
+																manager.addRow({
+																	itemCode  : form.options.buttons[j].id,
+																	itemDescription: form.options.buttons[j].text,
+																	itemRegion : forms[m],
+																	itemType : 'button',
+																	enabledFlag:'Y',
+																});
+															}
+														}
+														
+													}
+													
+												}
+												
+												
+												
+											}
+											for(var n = 0 ; n< grids.length; n++){
+												var grid = dialog.frame.$.ligerui.get(grids[n]);
+												if(grid.columns != null){
+													//定义一个变量用来接收判断结果
+													var count = 0;
+													var tempColumns = grid.columns.length;
+													if(data.length == 0){
+														for(var k=0;k<tempColumns;k++){
+															var type=null;
+															if(grid.columns[k].editor){
+																type = grid.columns[k].editor.type;
+															}else{
+																type = "";
+															}
+															if(grid.columns[k].name != null){
+																manager.addRow({
+																	itemCode  : grid.columns[k].name,
+																	itemType  : type,
+																	itemRegion : grids[n],
+																	itemDescription: grid.columns[k].display,
+																	enabledFlag:'Y',
+																});
+															}
+															
+														}
+													}else{
+														for(var k=0;k<tempColumns;k++){
+															var type=null;
+															if(grid.columns[k].editor){
+																type = grid.columns[k].editor.type;
+															}else{
+																type = "";
+															}
+															for(var x = 0;x<data.length;x++){
+																//判断导入数据和已存在数据是否有相同地方
+																if(data[x].itemCode == grid.columns[k].name &&　data[x].itemRegion == grids[n]){
+																	count =count+1;
+																	manager.data.rows[x].itemDescription = grid.columns[k].display;
+																	manager.data.rows[x].itemType = type;
+																	manager.reRender();
+																}
+															}
+															//没有相同的源数据，新增
+															if(count == 0){
+																manager.addRow({
+																	itemCode  : grid.columns[k].name,
+																	itemType  : type,
+																	itemRegion : grids[n],
+																	itemDescription: grid.columns[k].display,
+																	enabledFlag:'Y',
+																});
+															}
+														}
+													}
+													
+												}
+												if('toolbarManager' in grid){
+													//定义一个变量用来接收判断结果
+													var count = 0;
+													var tempToolBar = grid.toolbarManager.options.items.length;
+													var toolBar = grid.toolbarManager.options.items;
+													if(data.length == 0){
+														for(var l=0;l<tempToolBar;l++){
+															if(toolBar[l].icon != null){
+																manager.addRow({
+																	itemCode  : toolBar[l].icon,
+																	itemType  : 'toolbar',
+																	itemRegion : grids[n],
+																	itemDescription: toolBar[l].text,
+																	enabledFlag:'Y',
+																});
+															}
+														}
+													}else{
+														for(var l=0;l<tempToolBar;l++){
+															if(toolBar[l].icon != null){
+																for(var x = 0;x<data.length;x++){
+																	//判断导入数据和已存在数据是否有相同地方
+																	if(data[x].itemCode == toolBar[l].icon &&　data[x].itemRegion == grids[n] && toolBar[l].icon != null){
+																		count =count+1;
+																		manager.data.rows[x].itemDescription = toolBar[l].text;
+																		manager.reRender();
+																	}
+																}
+																//没有相同的源数据，新增
+																if(count == 0){
+																	manager.addRow({
+																		itemCode  : toolBar[l].icon,
+																		itemType  : 'toolbar',
+																		itemRegion : grids[n],
+																		itemDescription: toolBar[l].text,
+																		enabledFlag:'Y',
+																	});
+																	
+																}
+															}
+																
+															
+														}
+													}
+													
+												}
+												
+												
+												
+											}
+
+											dialog.close();
+										}
+									}, {
+										text : '<@spring.message "hap.cancel"/>',
+										onclick : function(item, dialog) {
+											dialog.close();
+										}
+									} ],
+							});
+						},
+						icon : 'import'
+						//img:'${base.contextPath}/resources/images/clear.png'
+					}]
+			}
+						
+			});
+			<#if isedit == '1'>
+			Hap.loadForm({form:resourceform,url:'${base.contextPath}/fnd/hpsResource/query',para:{fndResourceId:${RequestParameters.fndResourceId}}})
+			</#if>
+		</script>
+		</body>
+		</html>

@@ -1,0 +1,54 @@
+<configuration scan="true" scanPeriod="3 seconds">
+    <!-- <turboFilter class="ch.qos.logback.classic.turbo.MDCFilter">
+        <MDCKey>userId</MDCKey>
+        <Value>1</Value>
+        <OnMatch>ACCEPT</OnMatch>
+        <OnMismatch>DENY</OnMismatch>
+    </turboFilter> -->
+    <property name="LOG_HOME" value="/usr/local/apache-tomcat-7.0.70/webapps/hps/logs"></property>
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+	<encoder>
+	<pattern>%d{yyyy-MM-ddHH:mm:ss.SSS} %-5level [%X{userId}] [%X{requestId}] %logger - %msg%n</pattern>
+	</encoder>
+	</appender>
+	<appender name="INFO_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+	<encoding>UTF-8</encoding>
+	<Prudent>true</Prudent> 
+	<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+	<FileNamePattern>${LOG_HOME}/hps_info.%d{yyyy-MM-dd}.log</FileNamePattern>
+	<MaxHistory>30</MaxHistory>
+	</rollingPolicy>
+	<layout>
+	<pattern>%d{yyyy-MM-ddHH:mm:ss.SSS} %-5level [%X{userId}] [%X{requestId}] %logger - %msg%n</pattern>
+	</layout>
+	<filter class="ch.qos.logback.classic.filter.LevelFilter">
+	<level>INFO</level>
+	<onMatch>ACCEPT</onMatch>
+	<onMismatch>DENY</onMismatch>
+	</filter>
+	</appender>
+	<!-- 
+	<appender name="DEBUG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+	<encoding>UTF-8</encoding>
+	<file>${LOG_HOME}/debug.log</file>
+	<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+	<FileNamePattern>logs/debug.%d{yyyy-MM-dd}.log</FileNamePattern>
+	</rollingPolicy>
+	<layout>
+	<pattern>[%date{yyyy-MM-ddHH:mm:ss}] [%-5level] [%logger:%line] - %mdc{client} %msg%n</pattern>
+	</layout>
+	<filter class="ch.qos.logback.classic.filter.LevelFilter">
+	<level>DEBUG</level>
+	<onMatch>ACCEPT</onMatch>
+	<onMismatch>DENY</onMismatch>
+	</filter>
+	</appender> 
+	-->
+	
+	<root level="TRACE">
+	<appender-ref ref="STDOUT"/>
+	<appender-ref ref="INFO_FILE"/>
+	<!-- <appender-ref ref="DEBUG_FILE"/> -->
+	</root>
+
+</configuration>

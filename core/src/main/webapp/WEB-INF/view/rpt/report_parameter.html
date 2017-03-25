@@ -1,0 +1,253 @@
+<#-- * description: 报表参数界面 * version: 1.0 *
+author:chengye.hu@hand-china.com * #{copyright}# * --> 
+<#include "../include/head.html">
+<body style="padding: 10px;">
+	<form id="parameterForm"></form>
+	<div id="parameterGrid" style="margin: 0; padding: 0"></div>
+	<script type="text/javascript">
+		$(function() {
+			var reportId = ${RequestParameters.reportId};
+			window['parameterForm'] = $("#parameterForm").ligerForm({
+				fields : [ {
+					type : 'text',
+					label : '<@spring.message "hps.rpt.parameter.code"/>',
+					name : 'sqlcolName'
+				}, {
+					type : 'text',
+					label : '<@spring.message "hps.rpt.parameter.discription"/>',
+					name : 'filedDisplay',
+					newline : false
+				} ],
+				buttons : [ {
+					text : '<@spring.message "hap.query"/>',
+					disabled : false,
+					width : 60,
+					click : function() {
+						Hap.gridQuery({
+							form : parameterForm,
+							grid : parameterGrid
+						})
+					}
+				} ]
+			});
+
+			window['parameterGrid'] = $("#parameterGrid")
+					.ligerGrid(
+							{
+								unSetValidateAttr : false,
+								columns : [ {
+									display : '<@spring.message "hps.rpt.parameter.code"/>',
+									name : 'sqlcolName',
+									align : 'center',
+									width : 120,
+									editor : {
+										type : 'text'
+									},
+					                validate: {
+					                    required: true
+					                }
+								}, {
+									display : '<@spring.message "hps.rpt.parameter.discription"/>',
+									name : 'filedDisplay',
+									align : 'center',
+									width : 100,
+									editor : {
+										type : 'text'
+									},
+					                validate: {
+					                    required: true
+					                }
+								}, {
+									display : '<@spring.message "hps.rpt.parameter.datatype"/>',
+									name : 'dataType',
+									align : 'center',
+									width : 100,
+									editor : {
+										type : 'select',
+										valueField : 'ID',
+										textField : 'text',
+										data : [ {
+											ID : 'TEXT',
+											text : 'TEXT'
+										}, {
+											ID : 'DATE',
+											text : 'DATE'
+										}, {
+											ID : 'NUMBER',
+											text : 'NUMBER'
+										} ]
+									},
+					                validate: {
+					                    required: true
+					                }
+								}, {
+									display : '<@spring.message "hps.rpt.parameter.requiredflag"/>',
+									name : 'requiredFlag',
+									align : 'center',
+									width : 80,
+									render : Hap.createGridCheckBoxRender(),
+					                validate: {
+					                    required: true
+					                }
+								}, {
+									display : '<@spring.message "hps.rpt.parameter.filedtype"/>',
+									name : 'filedType',
+									align : 'center',
+									width : 100,
+									editor : {
+										type : 'select',
+										valueField : 'ID',
+										textField : 'text',
+										data : [ {
+											ID : 'TEXT',
+											text : 'TEXT'
+										}, {
+											ID : 'SELECT',
+											text : 'SELECT'
+										}, {
+											ID : 'LOV',
+											text : 'LOV'
+										} ]
+									},
+					                validate: {
+					                    required: true
+					                }
+								},  {
+									display : '<@spring.message "hps.rpt.parameter.rownum"/>',
+									name : 'rowNum',
+									align : 'center',
+									width : 90,
+									editor : {
+										type : 'float'
+									},
+					                validate: {
+					                    required: true
+					                }
+								}, {
+									display : '<@spring.message "hps.rpt.column.dateformat"/>',
+									name : 'dateFormat',
+									align : 'left',
+									width : 150,
+									editor : {
+										type : 'select',
+										valueField : 'ID',
+										textField : 'text',
+										data : [ {
+											ID : 'yyyy-MM-dd',
+											text : 'yyyy-MM-dd'
+										}, {
+											ID : 'yyyy/MM/dd',
+											text : 'yyyy/MM/dd'
+										}, {
+											ID : 'yyyy-MM-dd HH:mm:ss',
+											text : 'yyyy-MM-dd HH:mm:ss'
+										} ]
+									}
+								},{
+									display : '<@spring.message "hps.rpt.parameter.sql"/>',
+									name : 'parameterSql',
+									align : 'left',
+									width : 180,
+									editor : {
+										type : 'text'
+									}
+								}, {
+									display : '<@spring.message "hps.rpt.parameter.textfiled"/>',
+									name : 'textFiled',
+									align : 'left',
+									width : 100,
+									typeCase: 'uppercase',
+									editor : {
+										type : 'text'
+									}
+								}, {
+									display : '<@spring.message "hps.rpt.parameter.valuefiled"/>',
+									name : 'valueFiled',
+									align : 'left',
+									width : 100,
+									typeCase: 'uppercase',
+									editor : {
+										type : 'text'
+									}
+								}, {
+									hide : true,
+									width : 5,
+									name : 'reportId'
+								}],
+								url : '${base.contextPath}/rpt/parameter/query?reportId='
+										+ reportId,
+								toolbar : {
+									items : [
+											{
+												text : '<@spring.message "hap.new"/>',
+												disable : false,
+												click : function() {
+													parameterGrid
+															.addRow({
+																"reportId" : reportId
+															})
+												},
+												icon : 'add'
+											},
+											{
+												line : true
+											},
+											{
+												text : '<@spring.message "hap.delete"/>',
+												click : function() {
+													Hap
+															.gridDelete({
+																grid : parameterGrid,
+																url : '${base.contextPath}/rpt/parameter/delete'
+															})
+
+												},
+												icon : 'delete'
+											},
+											{
+												line : true
+											},
+											{
+												text : '<@spring.message "hap.save"/>',
+												click : function() {
+													var data = parameterGrid.rows;
+													for(var i =0;i<data.length;i++){
+														if(data[i].__status=="nochanged"){
+															data[i].__status = "update";
+														}
+													}
+													Hap
+															.gridSave({
+																grid : parameterGrid,
+																url : '${base.contextPath}/rpt/parameter/submit'
+															})
+												},
+												icon : 'save'
+											} ]
+								},
+								enabledEdit : true,
+								width : '99%',
+								height : '98%',
+								checkbox : true,
+								onBeforeEdit : function(e) {
+									if (e.column.columnname == "parameterSql"||e.column.columnname == "textFiled"||e.column.columnname == "valueFiled") {
+										if (e.record != null
+												&& !(e.record.filedType == 'SELECT' || e.record.filedType == 'LOV')) {
+											return false;
+										}
+										return true;
+									}
+									if (e.column.columnname == "dateFormat") {
+										if (e.record != null
+												&& e.record.dataType != 'DATE') {
+											return false;
+										} 
+										return true;
+									}
+									return true;
+								}
+							});
+		});
+	</script>
+</body>
+</html>

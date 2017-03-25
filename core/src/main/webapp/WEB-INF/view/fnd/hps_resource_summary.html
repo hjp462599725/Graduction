@@ -1,0 +1,227 @@
+<#include "../include/head.html">
+<body style="padding: 10px; overflow: hidden;">
+	<form id="resourceForm"></form>
+	<div id="resourceGrid" style="margin: 0; padding: 0"></div>
+	<script type="text/javascript">
+		$(function() {
+			window['resourceForm'] = $("#resourceForm").ligerForm({
+				fields : [ {
+					type : 'text',
+					label : '<@spring.message "resource.url"/>',
+					name : 'resourceUrl',
+					newline : false
+				}, {
+					type : 'text',
+					label : '<@spring.message "hap.description"/>',
+					name : 'comments',
+					newline : false
+				} ],
+				buttons : [ {
+					text : '<@spring.message "hap.query"/>',
+					disabled : false,
+					width : 60,
+					click : function() {
+						Hap.gridQuery({
+							form : resourceForm,
+							grid : resourceGrid
+						})
+					}
+				}, {
+					text : '<@spring.message "hap.reset"/>',
+					disabled : false,
+					width : 60,
+					click : function() {
+						resourceForm.reset();
+					}
+				} ],
+				onEnterDown : function() {
+					this.options.buttons[0].click();
+				}
+			});
+
+
+			window.editHpsResource = function(id,url) {
+				window.popWin = $.ligerDialog.open({
+					load : false,
+					width : 950,
+					height : 550,
+					title     : '<@spring.message "lookup.edit"/>',
+					url : 'hps_resource_edit.html?isedit=1&fndResourceId='+ id +'&url='+url
+				});
+			}
+	
+			window['resourceGrid'] = $("#resourceGrid")
+					.ligerGrid(
+							{
+								unSetValidateAttr : false,
+								columns : [
+										{
+
+											name : 'fndResourceId',
+											align : 'center',
+											hide : true,
+											width : 1,
+											editor : {
+												type : 'text'
+											}
+										},
+										{
+
+											name : 'resourceId',
+											align : 'center',
+											hide : true,
+											width : 1,
+											editor : {
+												type : 'text'
+											}
+										},
+										{
+											display : '<@spring.message "resource.url"/>',
+											name : 'resourceId',
+											align : 'center',
+											textField : 'resourceUrl',
+											width : 200,
+											editor : {
+												type : 'popup',
+												valueField: 'resourceId',
+							                    textField : 'url',
+							                    onSelected  : function(e) {
+													var o=e.data[0];
+													data=$.ligerui.get("resourceGrid").lastEditRow;
+							                    	data.resourceName = o.name;
+							                    	$.ligerui.get("resourceGrid").reRender();
+												},
+							                    grid      : {
+							                    	columns : [ {
+							            	            display : '<@spring.message "resource.url"/>',
+							            	            name : 'url',
+							            	            align : 'left',
+							            	            width : 300,
+							            	            editor : {
+							            	                type : ''
+							            	            }
+							            	        }, {
+							                            display : '<@spring.message "resource.name"/>',
+							                            name : 'name',
+							                            width: 180,
+							                            align: 'left',
+							                            editor : {
+							                                type : '',
+							                               
+							                            }
+							                        },{
+							                            display : '<@spring.message "resource.description"/>',
+							                            name : 'description',
+							                            width: 180,
+							                            align: 'left',
+							                            editor : {
+							                                type : '',
+							                               
+							                            }
+							                        } ],
+							            	        url : '${base.contextPath}/sys/resource/query?type=HTML',
+							            	        enabledEdit : true,
+							                    },condition : {
+							                        inputWidth: 150,
+							                        labelWidth: 70,
+							                        fields    : [{
+							        					type : 'text',
+							        					label : '<@spring.message "resource.url"/>',
+							        					name : 'url'
+							        				}]
+							                    }
+											},
+											
+										},
+
+										{
+											display : '<@spring.message "resource.name"/>',
+											name : 'resourceName',
+											align : 'center',
+											width : 200,
+
+											editor : {
+												type : ''
+
+											}
+										},
+
+										{
+											display : '<@spring.message "hap.description"/>',
+											name : 'comments',
+											align : 'center',
+											width : 200,
+
+											editor : {
+												type : 'text'
+
+											},validate : {
+							                    required : true
+							                }
+										},
+										{
+											display : '<@spring.message "hps.enabled_flag"/>',
+											name : 'enabledFlag',
+											align : 'center',
+											width : 100,
+
+											render : Hap
+													.createGridCheckBoxRender()
+										},
+										{
+											display : '<@spring.message "hap.action"/>',
+											width : 100,
+											align : 'center',
+											render : function(rowdata) {
+												if(!rowdata.fndResourceId) return '';
+												return '<a href="#" onclick="editHpsResource('+rowdata.fndResourceId+',\''+rowdata.resourceUrl+'\')"><@spring.message "hap.edit"/></a>'
+											}
+										} ],
+								url : '${base.contextPath}/fnd/hpsResource/query',
+								//url : '${base.contextPath}/fnd/hpsResource/import',
+
+								width : '100%',
+								height : '99%',
+								checkbox : false,
+								enabledEdit : true,
+								/* onBeforeEdit : function(e) {
+									if (e.column.columnname == 'resourceId'){
+										return e.record.__status == 'add';
+									}
+									return true;
+										
+								}, */
+								toolbar : {
+									items : [
+											{
+												text : '<@spring.message "hap.new"/>',
+												disable : false,
+												click : function() {
+													resourceGrid.addRow({})
+												},
+												icon : 'add'
+											},
+											{
+												line : true
+											},
+
+											{
+												text : '<@spring.message "hap.save"/>',
+												click : function() {
+
+													Hap
+															.gridSave({
+																grid : resourceGrid,
+																url : '${base.contextPath}/fnd/hpsResource/sumit'
+															})
+												},
+												icon : 'save'
+											}]
+								}
+
+							})
+		});
+	</script>
+</body>
+</html>
+

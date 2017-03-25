@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="hps.alt.mapper.AlertMapper">
+	<resultMap type="hps.alt.dto.AltAlert" id="BaseResult">
+		<id column="ALERT_ID" property="alertId" jdbcType="DECIMAL"/>
+		<result column="ALERT_NAME" property="alertName" jdbcType="VARCHAR"/>
+		<result column="DESCRIPTION" property="description" jdbcType="VARCHAR"/>
+		<result column="ALERT_TYPE_CODE" property="alertTypeCode" jdbcType="VARCHAR"/>
+		<result column="ENABLED_FLAG" property="enabledFlag" jdbcType="VARCHAR"/>
+	</resultMap>
+	
+	<resultMap type="hps.alt.dto.AltAlert" id="TableResult">
+		<result column="TABLE_NAME" property="tableName" jdbcType="VARCHAR"/>
+	</resultMap>
+	
+	<sql id="Base_Column_List">
+		ALERT_ID,ALERT_NAME,DESCRIPTION,ALERT_TYPE_CODE,ENABLED_FLAG
+	</sql>
+	
+	<select id="selectTable" resultMap="TableResult" parameterType="hps.alt.dto.AltAlert">
+		SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER=UPPER(#{tableOwner,jdbcType=VARCHAR})
+		
+			<if test="tableName != null">
+				and TABLE_NAME = #{tableName,jdbcType=VARCHAR}
+			</if>
+		
+	</select>
+	
+	<select id="selectAlert" resultMap="BaseResult" parameterType="hps.alt.dto.AltAlert">
+		select 
+		<include refid="Base_Column_List" />
+		from hps_alt_alert
+		<trim prefix="where" prefixOverrides="AND | OR">
+			<if test="alertName != null ">
+				 and ALERT_NAME = #{alertName,jdbcType=VARCHAR}
+			</if>
+			<if test="description != null">
+				and DESCRIPTION = #{description,jdbcType=VARCHAR}
+			</if>
+			<if test="alertTypeCode != null">
+				and upper(ALERT_TYPE_CODE) = upper(#{alertTypeCode,jdbcType=VARCHAR})
+			</if>			 
+		</trim>
+	</select>
+	
+	<insert id="insertAlert" parameterType="hps.alt.dto.AltAlert">
+		<selectKey resultType="Long" keyProperty="alertId" order="BEFORE">
+			select HPS_ALT_ALERT_S.nextVal from dual
+		</selectKey>
+		INSERT INTO HPS_ALT_ALERT
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			ALERT_ID,
+			<if test="alertName != null">ALERT_NAME,</if>
+			<if test="description != null">DESCRIPTION,</if>
+			<if test="alertTypeCode != null">ALERT_TYPE_CODE,</if>
+			<if test="enabledFlag != null">ENABLED_FLAG,</if>
+			<if test="sqlStatementText != null">SQL_STATEMENT_TEXT,</if>			
+			<if test="tableOwner != null">TABLE_OWNER,</if>
+			<if test="tableName != null">TABLE_NAME,</if>
+			<if test="insertFlag != null">INSERT_FLAG,</if>
+			<if test="updateFlag != null">UPDATE_FLAG,</if>
+			<if test="deleteFlag != null">DELETE_FLAG,</if>			
+			<if test="frequencyTypeCode != null">FREQUENCY_TYPE_CODE,</if>
+			<if test="intervalCycle != null">INTERVAL_CYCLE,</if>
+			<if test="monthlyDayNum != null">MONTHLY_DAY_NUM,</if>
+			<if test="weeklyDayMon != null">WEEKLY_DAY_MON,</if>
+			<if test="weeklyDayTues != null">WEEKLY_DAY_TUES,</if>
+			<if test="weeklyDayWed != null">WEEKLY_DAY_WED,</if>
+			<if test="weeklyDayThur != null">WEEKLY_DAY_THUR,</if>
+			<if test="weeklyDayFri != null">WEEKLY_DAY_FRI,</if>
+			<if test="weeklyDaySat != null">WEEKLY_DAY_SAT,</if>
+			<if test="weeklyDaySun != null">WEEKLY_DAY_SUN,</if>
+			<if test="executionTime != null">EXECUTION_TIME,</if>
+			<if test="executionStartTime != null">EXECUTION_START_TIME,</if>
+			<if test="executionEndTime != null">EXECUTION_END_TIME,</if>
+			<if test="continuousCycle != null">CONTINUOUS_CYCLE,</if>
+			<if test="cycleStartTime != null">CYCLE_START_TIME,</if>
+			<if test="cycleEndTime != null">CYCLE_END_TIME,</if>
+			<if test="cronExpression != null">CRON_EXPRESSION,</if>
+		</trim> 
+		<trim prefix="VALUES(" suffix=")" suffixOverrides=",">
+			#{alertId,javaType=java.lang.Long},
+			<if test="alertName != null">#{alertName,javaType=java.lang.String},</if>
+			<if test="description != null">#{description,javaType=java.lang.String},</if>
+			<if test="alertTypeCode != null">#{alertTypeCode,javaType=java.lang.String},</if>
+			<if test="enabledFlag != null">#{enabledFlag,javaType=java.lang.String},</if>
+			<if test="sqlStatementText != null">#{sqlStatementText,javaType=java.lang.String},</if>			
+			<if test="tableOwner != null">#{tableOwner,javaType=java.lang.String},</if>
+			<if test="tableName != null">#{tableName,javaType=java.lang.String},</if>
+			<if test="insertFlag != null">#{insertFlag,javaType=java.lang.String},</if>
+			<if test="updateFlag != null">#{updateFlag,javaType=java.lang.String},</if>
+			<if test="deleteFlag != null">#{deleteFlag,javaType=java.lang.String},</if>				
+			<if test="frequencyTypeCode != null">#{frequencyTypeCode,javaType=java.lang.String},</if>
+			<if test="intervalCycle != null">#{intervalCycle,javaType=java.lang.Long},</if>
+			<if test="monthlyDayNum != null">#{monthlyDayNum,javaType=java.lang.Long},</if>
+			<if test="weeklyDayMon != null">#{weeklyDayMon,javaType=java.lang.String},</if>
+			<if test="weeklyDayTues != null">#{weeklyDayTues,javaType=java.lang.String},</if>
+			<if test="weeklyDayWed != null">#{weeklyDayWed,javaType=java.lang.String},</if>
+			<if test="weeklyDayThur != null">#{weeklyDayThur,javaType=java.lang.String},</if>
+			<if test="weeklyDayFri != null">#{weeklyDayFri,javaType=java.lang.String},</if>
+			<if test="weeklyDaySat != null">#{weeklyDaySat,javaType=java.lang.String},</if>
+			<if test="weeklyDaySun != null">#{weeklyDaySun,javaType=java.lang.String},</if>
+			<if test="executionTime != null">#{executionTime,javaType=java.util.Date},</if>
+			<if test="executionStartTime != null">#{executionStartTime,javaType=java.util.Date},</if>
+			<if test="executionEndTime != null">#{executionEndTime,javaType=java.util.Date},</if>
+			<if test="continuousCycle != null">#{continuousCycle,javaType=java.lang.Long},</if>
+			<if test="cycleStartTime != null">#{cycleStartTime,javaType=java.util.Date},</if>
+			<if test="cycleEndTime != null">#{cycleEndTime,javaType=java.util.Date},</if>
+			<if test="cronExpression != null">#{cronExpression,javaType=java.lang.String},</if>
+		</trim>
+	</insert>
+	
+	<update id="updateAlert" parameterType="hps.alt.dto.AltAlert">
+		UPDATE HPS_ALT_ALERT
+		<set>
+			<if test="alertName != null">ALERT_NAME = #{alertName,javaType=java.lang.String},</if>
+			<if test="description != null">DESCRIPTION = #{description,javaType=java.lang.String},</if>
+			<if test="alertTypeCode != null">ALERT_TYPE_CODE = #{alertTypeCode,javaType=java.lang.String},</if>
+			<if test="enabledFlag != null">ENABLED_FLAG = #{enabledFlag,javaType=java.lang.String},</if>
+			<if test="sqlStatementText != null">SQL_STATEMENT_TEXT = #{sqlStatementText,javaType=java.lang.String},</if>			
+			<if test="tableOwner != null">TABLE_OWNER = #{tableOwner,javaType=java.lang.String},</if>
+			<if test="tableName != null">TABLE_NAME = #{tableName,javaType=java.lang.String},</if>
+			<if test="insertFlag != null">INSERT_FLAG = #{insertFlag,javaType=java.lang.String},</if>
+			<if test="updateFlag != null">UPDATE_FLAG = #{updateFlag,javaType=java.lang.String},</if>
+			<if test="deleteFlag != null">DELETE_FLAG = #{deleteFlag,javaType=java.lang.String},</if>
+			<if test="frequencyTypeCode != null">FREQUENCY_TYPE_CODE = #{frequencyTypeCode,javaType=java.lang.String},</if>
+			<if test="intervalCycle != null">INTERVAL_CYCLE = #{intervalCycle,javaType=java.lang.Long},</if>
+			<if test="monthlyDayNum != null">MONTHLY_DAY_NUM = #{monthlyDayNum,javaType=java.lang.Long},</if>
+			<if test="weeklyDayMon != null">WEEKLY_DAY_MON = #{weeklyDayMon,javaType=java.lang.String},</if>
+			<if test="weeklyDayTues != null">WEEKLY_DAY_TUES = #{weeklyDayTues,javaType=java.lang.String},</if>
+			<if test="weeklyDayWed != null">WEEKLY_DAY_WED = #{weeklyDayWed,javaType=java.lang.String},</if>
+			<if test="weeklyDayThur != null">WEEKLY_DAY_THUR = #{weeklyDayThur,javaType=java.lang.String},</if>
+			<if test="weeklyDayFri != null">WEEKLY_DAY_FRI = #{weeklyDayFri,javaType=java.lang.String},</if>
+			<if test="weeklyDaySat != null">WEEKLY_DAY_SAT = #{weeklyDaySat,javaType=java.lang.String},</if>
+			<if test="weeklyDaySun != null">WEEKLY_DAY_SUN = #{weeklyDaySun,javaType=java.lang.String},</if>
+			<if test="executionTime != null">EXECUTION_TIME = #{executionTime,javaType=java.util.Date},</if>
+			<if test="executionStartTime != null">EXECUTION_START_TIME = #{executionStartTime,javaType=java.util.Date},</if>
+			<if test="executionEndTime != null">EXECUTION_END_TIME = #{executionEndTime,javaType=java.util.Date},</if>
+			<if test="continuousCycle != null">CONTINUOUS_CYCLE = #{continuousCycle,javaType=java.lang.Long},</if>
+			<if test="cycleStartTime != null">CYCLE_START_TIME = #{cycleStartTime,javaType=java.util.Date},</if>
+			<if test="cycleEndTime != null">CYCLE_END_TIME = #{cycleEndTime,javaType=java.util.Date},</if>
+			<if test="cronExpression != null">CRON_EXPRESSION = #{cronExpression,javaType=java.lang.String},</if>	
+		</set>
+		<where>
+			AND ALERT_ID = #{alertId,javaType=java.lang.Long}
+		</where>
+	</update>
+	
+</mapper>
+
+

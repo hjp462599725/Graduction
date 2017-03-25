@@ -1,0 +1,52 @@
+<html>
+<head>
+<link href='/core/resources/css/skins/report_table.css' rel='stylesheet'
+	type='text/css' />
+<title>表单</title>
+<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+</head>
+<body>
+	<table class='imagetable' width='900' border='1' cellspacing='0'
+		cellpadding='0'>
+		<tr height='80px'>
+			<th width='120'>type</th>
+			<th width='120'>name</th>
+			<th width='120'>description</th>
+			<th width='120'>url</th>
+			<th width='120'>resourceId</th>
+			<th width='120'>loginRequire</th>
+		</tr>
+		<#list list as map><#if map_index % 2 == 0>
+		<tr class='even_tr'>
+			<td><#list map?keys as itemKey><#if itemKey =
+				"TYPE">${map[itemKey]}</#if></#list></td>
+			<td><#list map?keys as itemKey><#if itemKey =
+				"NAME">${map[itemKey]}</#if></#list></td>
+			<td><#list map?keys as itemKey><#if itemKey =
+				"DESCRIPTION">${map[itemKey]}</#if></#list></td>
+			<td><#list map?keys as itemKey><#if itemKey =
+				"URL">${map[itemKey]}</#if></#list></td>
+			<td><#list map?keys as itemKey><#if itemKey =
+				"RESOURCE_ID">${map[itemKey]}</#if></#list></td>
+			<td><#list map?keys as itemKey><#if itemKey =
+				"LOGIN_REQUIRE">${map[itemKey]}</#if></#list></td>
+		</tr>
+		<#else>
+		<tr class='odd_tr'>
+			<td><#list map?keys as itemKey><#if itemKey =
+				"TYPE">${map[itemKey]}</#if></#list></td>
+			<td><#list map?keys as itemKey><#if itemKey =
+				"NAME">${map[itemKey]}</#if></#list></td>
+			<td><#list map?keys as itemKey><#if itemKey =
+				"DESCRIPTION">${map[itemKey]}</#if></#list></td>
+			<td><#list map?keys as itemKey><#if itemKey =
+				"URL">${map[itemKey]}</#if></#list></td>
+			<td><#list map?keys as itemKey><#if itemKey =
+				"RESOURCE_ID">${map[itemKey]}</#if></#list></td>
+			<td><#list map?keys as itemKey><#if itemKey =
+				"LOGIN_REQUIRE">${map[itemKey]}</#if></#list></td>
+		</tr>
+		</#if></#list>
+	</table>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="hps.fnd.mapper.PlugVersionsMapper">
+	<resultMap type="hps.fnd.dto.PlugVersions" id="BaseResult">
+		<id column="PLUG_VERSION_ID" property="plugVersionId" jdbcType="DECIMAL" />
+		<result column="PLUG_ID" property="plugId" jdbcType="DECIMAL" />
+		<result column="VERSION_NUMBER" property="versionNumber" jdbcType="DECIMAL" />
+		<result column="UPLOAD_DATE" property="uploadDate" jdbcType="TIMESTAMP" />
+		<result column="DOWNLOAD_COUNT" property="downloadCount" jdbcType="DECIMAL" />
+		<result column="ENABLED_FLAG" property="enabledFlag" jdbcType="VARCHAR" />
+		<result column="FILE_SIZE" property="fileSize" jdbcType="DECIMAL" />
+	</resultMap>
+	<select id="selectFlugVersions" parameterType="hps.fnd.dto.PlugVersions" resultMap="BaseResult">
+		select hfpv.plug_version_id,
+		       hfpv.plug_id,
+		       hfpv.version_number,
+		       hfpv.download_count,
+		       hfpv.enabled_flag,
+		       sf.file_size,
+		       sf.upload_date
+		  from hps_fnd_plug_versions hfpv, sys_file sf, sys_attachment sa
+		 where sf.attachment_id = sa.attachment_id
+		   and sa.source_key = hfpv.plug_version_id
+		   and hfpv.enabled_flag = 'Y'
+		   <if test="plugId != null">
+		   	and hfpv.plug_id = #{plugId,javaType=java.lang.Long}
+		   </if>
+		   order by hfpv.version_number desc
+	</select>
+	
+	
+	
+	<select id="selectUploadFlugVersions" parameterType="hps.fnd.dto.PlugVersions" resultMap="BaseResult">
+		select hfpv.plug_version_id,
+		       hfpv.plug_id,
+		       hfpv.version_number,
+		       hfpv.download_count,
+		       hfpv.enabled_flag
+		  from hps_fnd_plug_versions hfpv
+		  <where>
+		  	<if test="plugId != null">
+		   		and hfpv.plug_id = #{plugId,javaType=java.lang.Long}
+		   </if>
+		  </where>
+		   order by hfpv.version_number desc
+	</select>
+	
+	<select id="SelectVersionsOnlyValidate" resultType="java.lang.Integer" parameterType="hps.fnd.dto.PlugVersions">
+		select count(*) from hps_fnd_plug_versions t 
+		<where>
+			<if test="plugId != null">
+				and t.plug_id = #{plugId,javaType=java.lang.Long}
+			</if>
+			<if test="plugVersionId != null">
+				and t.plug_version_id != #{plugVersionId,javaType=java.lang.Long}
+			</if>
+			<if test="versionNumber != null">
+				and t.version_number = #{versionNumber,javaType=java.lang.String}
+			</if>
+		</where>
+	</select>
+</mapper>

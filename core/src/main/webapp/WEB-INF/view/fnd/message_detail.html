@@ -1,0 +1,102 @@
+
+<#--
+        * description: 站内详细消息
+        * version: 1.0
+        * author:yanjie.zhang@hand-china.com
+        *
+        -->
+<#include "../include/head.html">
+<#include "../include/hps.html">
+    <style type="text/css">
+        td {
+            padding: 3px;
+        }
+
+    </style>
+    <body style="padding: 3px;">
+
+
+    <form id="messageForm" style="width:600px;margin-top: 40px">
+        <table  style="width: 600px;margin-left: 33px;">
+            <tbody>
+            <tr>
+                <td class="tdAlign">
+                    <div  style="width: 24px;">
+                        <label><@spring.message "hps.fnd.message.title"/></label>
+                    </div>
+                </td>
+                <td>
+                    <div class="l-text" style="width: 445px;margin-left:44px;color:#C2C2C2;background-color: #f5f5f5">
+                        <input id="title"  name="title" type="text" class="ui-textbox l-text-field" style="background-color: #f5f5f5"/>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <table  style="width: 600px;margin-left: 33px;">
+            <tbody>
+            <tr>
+                <td class="tdAlign">
+                    <div  style="width: 50px;">
+                        <label><@spring.message "hps.fnd.message.messagetypecode"/></label>
+                    </div>
+                </td>
+                <td>
+                    <div class="l-text" style="width: 155px;color:#C2C2C2;background-color: #f5f5f5">
+                        <input id="messageTypeCodeMeaning"  name="messageTypeCodeMeaning" type="text" class="ui-textbox l-text-field" style="background-color: #f5f5f5"/>
+                    </div>
+                </td>
+                <td/>
+                <td class="tdAlign">
+                    <label style="width: 50px;"><@spring.message "hps.fnd.message.messagestatus"/></label>
+                </td>
+                <td>
+                    <div class="l-text" style="width: 140px;color:#C2C2C2;background-color: #f5f5f5;margin-right:9px">
+                        <input id="messageStatus" name="messageStatus" type="text" class="ui-textbox l-text-field" style="background-color: #f5f5f5"/>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <table style="width: 600px;margin-left: 33px;">
+            <tr>
+                <td>
+                    <div  style="width: 61px;">
+                        <label style="text-align: center"><@spring.message "hps.fnd.message.content"/></label>
+                    </div>
+                </td>
+                <td>
+                    <div id="mesDiv" style="width:446px;height:130px;border: 1px solid ;color:#C2C2C2;background-color: #f5f5f5">
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </form>
+
+
+
+    <script type="text/javascript">
+
+        $(function () {
+
+            var messageForm = $("#messageForm").ligerForm();
+
+            Hap.loadForm({
+                form: messageForm,
+                url: '${base.contextPath}/fnd/message/queryDetail?messageId=${RequestParameters.messageId!}&receiverId=${RequestParameters.receiverId!}&status=${RequestParameters.status!}',
+
+                callback: function (d, json) {
+                    $("#title").attr("value",d.title);
+                    $("#messageTypeCodeMeaning").attr("value",d.messageTypeCodeMeaning);
+                    $("#messageStatus").attr("value",d.messageStatus);
+                    $("#title").attr("disabled","disabled");
+                    $("#messageTypeCodeMeaning").attr("disabled","disabled");
+                    $("#messageStatus").attr("disabled","disabled");
+                    var innerHtml = d.content;
+                    document.getElementById('mesDiv').innerHTML = innerHtml;
+                }
+            });
+        })
+    </script>
+    </body>

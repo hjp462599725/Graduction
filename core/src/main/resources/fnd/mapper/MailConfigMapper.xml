@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="hps.fnd.mapper.MailConfigMapper">
+<resultMap type="hps.fnd.dto.MailConfig" id="mailConfigMap">
+	<id column="MAIL_CONFIG_ID" property="mailConfigId" jdbcType="DECIMAL" />
+	<result column="MAIL_CONFIG_CODE" property="mailConfigCode" jdbcType="VARCHAR"/>
+	<result column="HOST" property="host" jdbcType="VARCHAR"/>
+	<result column="PORT" property="port" jdbcType="DECIMAL"/>
+	<result column="MAIL_ADDRESS" property="mailAddress" jdbcType="VARCHAR"/>
+	<result column="USER_NAME" property="userName" jdbcType="VARCHAR"/>
+	<result column="PASSWORD" property="password" jdbcType="VARCHAR"/>
+	<result column="ENABLED_FLAG" property="enabledFlag" jdbcType="VARCHAR"/>
+</resultMap>
+<select id="selectMailConfig" parameterType="hps.fnd.dto.MailConfig" resultMap="mailConfigMap">
+	select FMC.MAIL_CONFIG_ID,
+	       FMC.MAIL_CONFIG_CODE,
+	       FMC.HOST,
+	       FMC.PORT,
+	       FMC.MAIL_ADDRESS,
+	       FMC.USER_NAME,
+	       FMC.PASSWORD,
+	       FMC.ENABLED_FLAG
+  	from HPS_FND_MAIL_CONFIG FMC
+  	<where>
+  		1 = 1
+  		<if test="mailConfigCode!=null">
+  			AND FMC.MAIL_CONFIG_CODE like #{mailConfigCode,jdbcType=VARCHAR}
+  		</if>
+  		<if test="mailAddress!=null">
+  			AND FMC.MAIL_ADDRESS like #{mailAddress,jdbcType=VARCHAR}
+  		</if>
+  		<if test="userName!=null">
+  			AND FMC.USER_NAME like #{userName,jdbcType=VARCHAR}
+  		</if>
+  	</where>
+</select>
+
+<!-- 判断配置代码是不是唯一 -->
+<select id="selectMailConfigOnly" parameterType="hps.fnd.dto.MailConfig" resultType="int">
+	select count(0) from HPS_FND_MAIL_CONFIG FMC 
+	<where>
+		<if test="mailConfigCode!=null">
+			FMC.MAIL_CONFIG_CODE = #{mailConfigCode,jdbcType=VARCHAR}
+		</if>
+	</where>
+</select>
+	
+</mapper>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="hps.alt.mapper.RecipientMapper">
+
+	<resultMap type="hps.alt.dto.Recipient" id="BaseResultMap"
+		extends="com.hand.hap.mapper.StdMapper.STD">
+		<id column="RECIPIENT_LIST_ID" property="recipientListId" jdbcType="DECIMAL" />
+		<result column="LIST_NAME" property="listName"
+			jdbcType="VARCHAR" />
+		<result column="LIST_DESCRIPTION" property="listDescription"
+			jdbcType="VARCHAR" />
+		<result column="ENABLED_FLAG" property="enabledFlag" jdbcType="VARCHAR" />
+			<result column="LANG" property="lang" jdbcType="VARCHAR"/>
+		<result column="EMPLOYEE_NAME" property="employeeName" jdbcType="VARCHAR" />
+			
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		RECIPIENT_LIST_ID,LIST_NAME,LIST_DESCRIPTION,ENABLED_FLAG,LANG,EMPLOYEE_NAME
+	</sql>
+
+	<!-- 查询所有收件人列表信息 -->
+	<select id="selectRecipient" parameterType="hps.alt.dto.Recipient" resultMap="BaseResultMap">
+		select l.recipient_list_id,l.list_name,l.list_description,l.enabled_flag from 
+				HPS_ALT_RECIPIENT_LIST l
+		<where>
+			<if test="listName!=null">
+				l.list_name like #{listName,jdbcType=VARCHAR}
+			</if>
+			
+			<if test="listDescription!=null">
+				and l.list_description like #{listDescription,jdbcType=VARCHAR}
+			</if>
+
+			<if test="recipientListId!=null">
+				and l.recipient_list_id =#{recipientListId,jdbcType=DECIMAL}
+			</if>
+		</where>
+	</select>
+	
+	<!-- 根据id查询收件人列表信息 -->
+	<select id="selectRecipientById" resultMap="BaseResultMap"
+		parameterType="java.lang.Long">
+		select r.recipient_list_id,r.list_name,r.list_description from
+		HPS_ALT_RECIPIENT_LIST r where
+		r.recipient_list_id=#{recipientListId,jdbcType=DECIMAL}
+	</select>
+	
+	<!-- 新增收件人列表信息 -->
+	<insert id="insertRecipient" parameterType="hps.alt.dto.Recipient">
+		<selectKey keyProperty="recipientListId" order="BEFORE"
+			resultType="java.lang.Long">
+			select HPS_ALT_RECIPIENT_LIST_S.Nextval from dual
+		</selectKey>
+		insert into HPS_ALT_RECIPIENT_LIST
+		(recipient_list_id,
+		list_name,
+		list_description,
+		ENABLED_FLAG,
+		CREATED_BY)
+		values(#{recipientListId,jdbcType=DECIMAL},
+		#{listName,jdbcType=VARCHAR},
+		#{listDescription,jdbcType=VARCHAR},
+		#{enabledFlag,jdbcType=VARCHAR},
+		#{request.userId,javaType=java.lang.Long})
+		</insert>
+
+	<!-- 修改收件人列表信息  -->
+	<update id="updateRecipient" parameterType="hps.alt.dto.Recipient">
+		update HPS_ALT_RECIPIENT_LIST harl set 
+		harl.list_name = #{listName,jdbcType=VARCHAR},
+		harl.list_description = #{listDescription,jdbcType=VARCHAR},
+		harl.enabled_flag = #{enabledFlag,jdbcType=VARCHAR},
+		OBJECT_VERSION_NUMBER = OBJECT_VERSION_NUMBER + 1,
+		LAST_UPDATE_DATE = SYSDATE,
+		LAST_UPDATED_BY = #{lastUpdatedBy,javaType=java.lang.Long},
+		LAST_UPDATE_lOGIN = #{lastUpdateLogin,javaType=java.lang.Long}
+		where 
+		recipient_list_id = #{recipientListId,jdbcType=DECIMAL} 
+	</update>
+
+	<!-- 删除收件人列表信息 -->
+	<delete id="removeRecipient" parameterType="hps.alt.dto.Recipient">
+		delete from
+		HPS_ALT_RECIPIENT_LIST r where r.recipient_list_id=#{recipientListId}
+	</delete>
+	
+	<select id="queryRecipientDatil" parameterType="java.lang.Long" resultType="hps.org.dto.Employee">
+		select e.employee_id     as employeeId,
+			   e.employee_name   as employeeName,
+		       e.employee_number as employeeNumber,
+		       e.mobile_phone    as mobilePhone,
+		       e.email
+		  from hps_org_employee_b e, hps_alt_recipient_detail r
+		 where e.employee_id = r.employee_id
+	     and r.recipient_list_id = #{recipientListId,javaType=java.lang.Long}
+	</select>
+</mapper>

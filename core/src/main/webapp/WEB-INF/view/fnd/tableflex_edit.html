@@ -1,0 +1,261 @@
+<#-- 
+* description: 表验证值集编辑界面 
+* version: 1.0 
+* author:liutianle@hand-china.com
+* #{copyright}# 
+* --> 
+<#include "../include/head.html">
+<#include "../include/hps.html">
+<body style="padding: 10px; overflow: hidden;">
+	<form id="validationTableForm"></form>
+	<div id="validationTableGrid" style="margin: 0; padding: 0;"></div>
+	<script src="${base.contextPath}/common/code?alignType=SYS.ALIGN_TYPE" type="text/javascript"></script>
+	<script type="text/javascript">
+		$(function() {
+			//提交表单
+			var f_save = function(){
+				Hap.submitForm({
+					form : validationTableForm,
+					grid : validationTableGrid,
+					gridName: 'validationTables',
+	                url		: '${base.contextPath}/fnd/validationTable/save',
+	                success : function(json,opt){
+	                	$.ligerDialog.success('<@spring.message "hap.tip.success"/>','<@spring.message "hap.tip.info"/>',function(){
+	                		parent.flexValueGrid.reload();
+	                		f_cancel();
+	                	});
+	                } 
+				});
+			}
+			
+			var f_cancel = function() {
+	            var dialog = frameElement.dialog;
+	            dialog.close();
+	        }
+			//表单底部按钮 
+	        Hap.setFormDefaultBtn(f_cancel, f_save);
+			var validationTableForm = window['validationTableForm'] = $("#validationTableForm").ligerForm({
+				fields : [ {
+					name : 'flexValueSetId',
+					type : 'hidden'
+				}, {
+					type : 'text',
+					label : '<@spring.message "hps.fnd.flexvalue.name"/>',
+					width : 260,
+					labelwidth:80,
+					name : 'flexValueSetName',
+					typeCase : 'uppercase'
+				}, {
+					label : '<@spring.message "hps.fnd.flexvalue.description"/>',
+					width : 300,
+					type : "text",
+					labelwidth: 80,
+					name : 'description'
+				}, {
+					type : 'text',
+					label : '<@spring.message "hps.fnd.flexvalue.tablename"/>',
+					width : 635,
+					labelwidth:80,
+					name : 'tableName',
+					newline : true,
+					validate:{
+						required : true
+					}
+				}, {
+					type : 'textarea',
+					label : '<@spring.message "hps.fnd.flexvalue.wherecondition"/>',
+					width : 300,
+					labelwidth : 80,
+					name : 'whereCondition',
+					newline : true
+				}, {
+					type : 'textarea',
+					label : '<@spring.message "hps.fnd.flexvalue.expandmethod"/>',
+					width : 300,
+					labelwidth : 80,
+					name : 'expandMethod',
+					newline : false
+				}, {
+					type : 'text',
+					label : '<@spring.message "hps.fnd.flexvalue.title"/>',
+					width : 260,
+					labelwidth:80,
+					name : 'title',
+					newline : true
+					//group : 'lov属性'
+				}, {
+					type  	: 'int',
+					label 	: '<@spring.message "hps.fnd.flexvalue.height"/>',
+					width 	: 90,
+					labelwidth:30,
+					space 	: 0,
+					name  	: 'height',
+					newline : false
+				}, {
+					type : 'int',
+					label : '<@spring.message "hps.fnd.flexvalue.width"/>',
+					width : 90,
+					labelwidth : 45,
+					space 	: 28,
+					name : 'width',
+					newline : false
+				}, {
+					type : 'checkbox',
+					label : '<@spring.message "hps.fnd.flexvalue.delayedloadingflag"/>',
+					width : 15,
+					labelwidth: 120,
+					space:0,
+					name : 'delayedLoadingFlag',
+					newline : false,
+					options : {
+						checkValue : 'Y',
+						uncheckValue : 'N'
+					},
+				}],
+				onAfterSetFields:function(){
+	            	liger.get('flexValueSetName').setDisabled();
+	            }
+			});
+	        Hap.loadForm({
+	    		form	:	validationTableForm,
+	    		url		:	'${base.contextPath}/fnd/flexVset/queryFlexVset',
+	    		para	:	{
+	    			flexValueSetId : ${RequestParameters.flexValueSetId}
+	    		}
+	    	});
+	    	if(liger.get("width").getValue()==null||liger.get("width").getValue()==""){
+	    		liger.get("width").setValue(500);
+	    	}
+	    	if(liger.get("height").getValue()==null||liger.get("height").getValue()==""){
+	    		liger.get("height").setValue(260);
+	    	}
+	        
+			var validationTableGrid = window['validationTableGrid'] = $("#validationTableGrid").ligerGrid({
+				unSetValidateAttr : false,
+				columns : [ {
+					display : '<@spring.message "hps.fnd.flexvalue.columnname"/>',
+					name : 'columnName',
+					align : 'center',
+					width : '14%',
+					typeCase : 'uppercase',
+					validate : {
+						required : true
+					},
+					editor : {
+						type : 'text',
+					}
+				},{
+					display : '<@spring.message "hps.fnd.flexvalue.columnalias"/>',
+					name : 'columnAlias',
+					align : 'center',
+					width : '11%',
+					typeCase : 'uppercase',
+					editor : {
+						type : 'text',
+					}
+				}, {
+					display : '<@spring.message "hps.fnd.flexvalue.conditionflag"/>',
+					name : 'conditionFlag',
+					align : 'center',
+					width : '7%',
+					render : Hap.createGridCheckBoxRender()
+				},{
+					display : '<@spring.message "hps.fnd.flexvalue.columnflag"/>',
+					name : 'columnFlag',
+					align : 'center',
+					width :'8%',
+					render : Hap.createGridCheckBoxRender(),
+				}, {
+					display : '<@spring.message "hps.fnd.flexvalue.description"/>',
+					name : 'description',
+					align : 'center',
+					width : '10%',
+					editor : {
+						type : "tl",
+						dto:"hps.fnd.dto.ValidateTable",
+						idField : 'validateTableId'
+					}
+				},  {
+					display : '<@spring.message "hps.fnd.flexvalue.width"/>',
+					name : 'width',
+					align : 'center',
+					width : '7%',
+					editor : {
+						type : 'int',
+					}
+				}, {
+					display : 'valueField',
+					name : 'valueField',
+					align : 'center',
+					width : '12%',
+					editor : {
+						type : 'text',
+					},
+					validate : {
+						required : true
+					},
+				}, {
+					display : 'textField',
+					name : 'textField',
+					align : 'center',
+					width :  '12%',
+					editor : {
+						type : 'text',
+					}
+				}, {
+					display : '<@spring.message "hps.fnd.flexvalue.algin"/>',
+					name : 'algin',
+					align : 'center',
+					width : '7%',
+					editor : {
+						type : 'select',
+						valueField : 'value',
+						textField : 'meaning',
+						data : alignType
+					},
+					render  :function(rowdata){
+						return Hap.getCodeMeaning(alignType,rowdata.algin);
+					}	
+				}, {
+					display : '<@spring.message "hps.fnd.flexvalue.hiddenflag"/>',
+					name : 'hiddenFlag',
+					align : 'center',
+					width : '6%',
+					render : Hap.createGridCheckBoxRender()
+				}, {
+					display : '<@spring.message "hps.fnd.flexvalue.enabledflag"/>',
+					name : 'enabledFlag',
+					align : 'center',
+					width : '6%',
+					render : Hap.createGridCheckBoxRender()
+				}],
+				toolbar : {
+					items : [{
+						text : '<@spring.message "hap.new"/>',
+						disable : false,
+						click : function() {
+							validationTableGrid.addRow({
+								flexValueSetId : ${RequestParameters.flexValueSetId!}
+							});
+						},
+						icon : 'add'
+					}, {
+						line : true
+					}, {
+						text : '<@spring.message "hap.clean"/>',
+						click : function() {
+							clearRow(validationTableGrid);
+						},
+						icon : 'clear'
+					}]
+				},
+	            url: '${base.contextPath}/fnd/validationTable/query?flexValueSetId=${RequestParameters.flexValueSetId!}', 
+				width : '100%',
+				height : '92%',
+				checkbox : false,
+				enabledEdit : true
+			});
+		});
+	</script>
+</body>
+</html>

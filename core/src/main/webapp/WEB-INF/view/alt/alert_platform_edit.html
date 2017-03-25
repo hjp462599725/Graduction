@@ -1,0 +1,1373 @@
+<#include "../include/head.html">
+
+
+
+
+<body style="padding: 15px;overflow: auto;">
+	<form id="alertQueryForm"></form>
+
+	<div class="liger-tab" style="margin-top: 20px;">
+		<div title="预警条件">
+			<form id="alert_sql_form"></form>
+		</div>
+		<div title="预警详细信息" style="padding: 0; margin: 0;">
+			<div>
+				<span>输入信息</span>
+				
+				<div id="alert_input_grid"></div>
+				<span style="display:block;margin-top: 10px;position: relative;">输出信息</span>
+				<div id="alert_output_grid"></div>
+			</div>	
+		</div>
+		<div title="预警计划" style="padding: 0px;" id="alert_plan">
+			<form id="alert_plan_form"></form>
+		</div>
+		<div title="预警事件" style="padding: 0px;"  id="alert_event" >
+			<form id="alert_event_form"></form>
+		</div>
+		<div title="预警活动" style="padding: 0px;">
+			<div id="alert_action_grid" style="margin-top: 5px;"></div>
+		</div>
+	</div>
+
+
+
+	<script src="/core/fnd/code?sourceData=HPS_ALT_ALERT_TYPE"
+		type="text/javascript">		
+	</script>
+	<script src="/core/fnd/code?sourceData2=HPS_ALT_INPUT_TYPE"
+		type="text/javascript">		
+	</script>
+	<script src="/core/fnd/code?sourceData3=HPS_ALT_DATA_TYPE"
+		type="text/javascript">		
+	</script>
+	<script src="/core/fnd/code?sourceData4=HPS_ALT_FREQUENCY_TYPE"
+		type="text/javascript">		
+	</script>
+	<script src="/core/fnd/code?actionData=HPS_ALT_ACTION_LEVEL"
+		type="text/javascript">		
+	</script>
+	<script src="/core/fnd/code?noticeData=HPS_ALT_NOTICE_TYPE"
+		type="text/javascript">		
+	</script>
+	<script type="text/javascript">
+		$(function() {
+			window["alertQueryForm"] = $("#alertQueryForm").ligerForm({
+				fields : [ {
+					width : 150,
+					type : 'hidden',
+					space : 10,
+					name : 'alertId',
+				},{
+					type : 'text',
+					label : '<@spring.message "hps.alt.alert.name"/>',
+					name : 'alertName',
+					validate: {
+	                    required: true
+	                }
+				}, {
+					type : 'text',
+					label : '<@spring.message "hps.alt.alert.description"/>',
+					name : 'description',
+					newline : false,
+					
+				}, {
+					type : 'combobox',
+					label : '<@spring.message "hps.alt.alert.typecode"/>',
+					name : 'alertTypeCode',
+					options : {
+						valueField : 'lookupCode',
+						textField : 'meaning',
+						data : sourceData,
+						slide : true,
+						onSelected : function(value){
+							disabledTab(value)
+						},
+					},
+					validate: {
+	                    required: true
+	                }
+				}, {
+					type : 'checkbox',
+                	label : '<@spring.message "hps.alt.alert.enabledflag"/>',
+					name : 'enabledFlag',
+					newline : false,
+					options : {
+	                	checkValue :　'Y',
+	                	uncheckValue : 'N',    
+	                },
+	               
+				} ],	
+			});
+			
+			// 根据不同的预警类型来设置TAB隐藏
+			var li = $("li.l-selected").parent().children();
+			//$(li[2]).css("display","none");
+			//$(li[3]).css("display","none");
+			function disabledTab(value){				
+				if (value == "E") {
+					$(li[2]).css("display","none");					
+					$(li[3]).css("display","block");
+					
+					if ($(li[2]).hasClass("l-selected")) {
+						$(li[2]).removeClass("l-selected");
+						$(li[3]).addClass("l-selected");
+						$("#alert_plan").addClass("l-tab-hide");
+						$("#alert_event").removeClass("l-tab-hide");
+					}
+					
+				}
+				if (value == "P") {
+					$(li[2]).css("display","block");										
+					$(li[3]).css("display","none");
+					if ($(li[3]).hasClass("l-selected")) {
+						$(li[3]).removeClass("l-selected");
+						$(li[2]).addClass("l-selected");
+						$("#alert_plan").removeClass("l-tab-hide");
+						$("#alert_event").addClass("l-tab-hide");
+					}
+					
+				}
+			}
+			
+			//${RequestParameters.alertId}
+			//初始化数据
+			$("#alertId").val(${RequestParameters.alertId});
+			 if ($("#alertId").val()!=null) {
+				$.ajax({
+		            url    : '${base.contextPath}/alt/alert/queryone',
+		            data   : {
+		                alertId: $("#alertId").val()
+		            },
+		            success: function (json) {
+		            	var row = json.rows[0];
+		            	$.ligerui.get($('#alertQueryForm')).setData({
+		            	alertId : row.alertId,alertName : row.alertName,description :row.description,
+		            	alertTypeCode : row.alertTypeCode,enabledFlag : row.enabledFlag});
+		            	$.ligerui.get($('#alert_sql_form')).setData(row);
+		            	$.ligerui.get($('#alert_plan_form')).setData(row);
+		            	$.ligerui.get($('#alert_event_form')).setData(row);
+		                if (json.success) {		                 
+		                    alert_input_grid.setParm("alertId",$("#alertId").val());
+							alert_input_grid.loadData();
+							alert_output_grid.setParm("alertId",$("#alertId").val());
+							alert_output_grid.loadData();
+		                }
+		            }
+		        });
+			} 
+			
+			
+			/*
+				预警条件
+			*/
+			
+			
+			window["alert_sql_form"] = $("#alert_sql_form").ligerForm({
+				fields : [ {
+					type : 'textarea',
+					//label : '<@spring.message "hps.alt.alert.name"/>',
+					label : '<@spring.message "hps.alt.alert.sqltext"/>',
+					name : 'sqlStatementText',					
+					width : 500,
+					options : {
+					 	value : 'SELECT COLUMN_NAME1,COLUMN_NAME2 INTO &OUTPUT1,&OUTPUT2 FROM TABLE_NAME WHERE  CONDITION1 = :INPUT1'
+					}
+				}],
+				buttons : [{
+					text : '<@spring.message "hap.save"/>',
+					disabled : false,
+	                width : 60,
+	                click : function() {
+	                     if (!(Hap.validateForm($('#alertQueryForm')))) {
+                    		return;
+                		}
+                		if ($("#alertId").val()!= "") {
+							$.ajax({
+								type : "get",
+								url: "${base.contextPath}/alt/detail/update",
+								data: {
+									   "alertTypeCode" : $("#alertTypeCode").val(),
+									   "alertId" : $("#alertId").val(),
+									   "enabledFlag" : liger.get('enabledFlag').getValue(),
+									   "alertName" : liger.get('alertName').getValue(),
+									   "description" : liger.get('description').getValue(),
+									   "sqlStatementText" : liger.get('sqlStatementText').getValue(),
+									},
+								success : function(json){
+									if (json.success) {
+										alert_input_grid.setParm("alertId",$("#alertId").val());
+										alert_input_grid.loadData();
+										alert_output_grid.setParm("alertId",$("#alertId").val());
+										alert_output_grid.loadData();
+									}
+									$.ligerDialog.success("<@spring.message "hps.alt.update_success"/>", '<@spring.message "hap.tip.info"/>', function(){});
+								}
+							})
+						}else{
+							$.ajax({
+								type : "get",
+								url: "${base.contextPath}/alt/detail/save",
+								data: {
+									   "alertTypeCode" : $("#alertTypeCode").val(),
+									   "enabledFlag" : liger.get('enabledFlag').getValue(),
+									   "alertName" : liger.get('alertName').getValue(),
+									   "description" : liger.get('description').getValue(),
+									   "sqlStatementText" : liger.get('sqlStatementText').getValue(),
+									},
+								success : function(json){
+									
+									if (json.success) {
+										alert_input_grid.setParm("alertId",row.alertId);
+										alert_input_grid.loadData();
+										alert_output_grid.setParm("alertId",row.alertId);
+										alert_output_grid.loadData();
+									}
+									$.ligerDialog.success("<@spring.message "hap.tip.success"/>", '<@spring.message "hap.tip.info"/>', function(){});
+								}
+							})
+						}
+						
+						
+	                }
+				},{
+					
+					text : '<@spring.message "hps.alt.alert.validate"/>',
+					disabled : false,
+	                width : 60,
+	                click : function() {
+	                var alertNameVar = liger.get("alertName");
+	                
+	                	if(alertNameVar.conn!=null){
+	                		return;
+	                	}
+	                	alertNameVar.conn=
+	                	 $.ajax({
+	                			type : "get",
+								url: "${base.contextPath}/alt/alert/validate",
+								data: {"alertId" : $("#alertId").val(),
+									   "sqlStatementText" : liger.get('sqlStatementText').getValue()},
+								success : function(json){
+									if (json.success) {
+										$.ligerDialog.success("<@spring.message "hap.tip.success"/>", '<@spring.message "hap.tip.info"/>', function(){                       
+	                                  	
+	                                  	});
+
+									}
+									alertNameVar.conn=null;
+								},
+								error : function(){
+									alertNameVar.conn=null;
+								}
+								
+	                	});
+	                	
+	                }
+				},{
+					text : '<@spring.message "hps.alt.alert.run"/>',
+					disabled : false,
+	                width : 60,
+	                click : function() {
+	                	var alert = liger.get('alert_input_grid').getData();
+	                	var alertId;
+	                	if (alert != '' && alert != null) {
+							alertId = alert[0].alertId;
+						}
+
+	                	var alertNameVar = liger.get("alertName");
+	                	if(alertNameVar.conn!=null){
+	                		return;
+	                	}
+	                	alertNameVar.conn=
+	                	 $.ajax({
+	                			type : "get",
+								url: "${base.contextPath}/alt/alert/validate",
+								data: {"alertId" : $("#alertId").val(),
+									   "sqlStatementText" : liger.get('sqlStatementText').getValue(),"save":"save",
+									   "alertName" : liger.get('alertName').getValue(),
+									   "description" : liger.get('description').getValue()},
+								success : function(json){
+									if (json.success) {
+										$.ligerDialog.success(json.message, '<@spring.message "hap.tip.info"/>', function(){                       
+	                                  	
+	                                  	});
+									}
+									alertNameVar.conn=null;
+								},
+								error : function(){
+									alertNameVar.conn=null;
+								}
+								
+	                	});
+	                }
+				}],
+			});
+								
+			
+			/*
+				预警详细信息
+			*/
+			
+			window["alert_input_grid"] = $("#alert_input_grid").ligerGrid({
+				usePager           : true,
+				unSetValidateAttr  : false,
+				columns: [{
+					display : '<@spring.message "hps.alt.alert.input_name"/>',
+					name : 'inputName',
+					width : 100,
+					validate: {
+	                    required: true
+	                }
+				},{
+					display : '<@spring.message "hps.alt.alert.description"/>',
+					name : 'inputTitle',
+					width : 100,
+					editor : {
+	            		type : 'text',
+	            	}
+				},{
+					display : '<@spring.message "hps.alt.alert.input_type"/>',
+					name : 'inputTypeCode',
+					width : 100,
+					editor : {
+						type : 'select',
+						valueField : 'lookupCode',
+						textField : 'meaning',						
+						data : sourceData2,
+						slide : true,
+						onChangeValue : function(rowdata){
+							data=$.ligerui.get("alert_input_grid").lastEditRow;
+							if(rowdata == "S"){
+								data.dataTypeCode = "";
+								data.defaultValue = "";
+							}else if(rowdata == "C"){
+								data.sqlStatement = "";
+							}else{
+								data.dataTypeCode = "";
+								data.defaultValue = "";
+								data.sqlStatement = "";
+							}
+							$.ligerui.get("alert_input_grid").reRender();
+						},
+					},
+					 render : function(item){
+					 	for (var i in sourceData2) {
+							if (sourceData2[i].lookupCode == item.inputTypeCode) {
+								return sourceData2[i].meaning;
+							}
+						}
+		                return '';
+					}, 
+				},{
+					display : '<@spring.message "hps.alt.alert.data_type"/>',
+					name : 'dataTypeCode',
+					width : 100,
+					editor : {
+						type : 'select',
+						valueField : 'lookupCode',
+						textField : 'meaning',
+						data : sourceData3,
+						slide : true,
+					},
+					render : function(item){
+						for (var i in sourceData3) {
+							if (sourceData3[i].lookupCode == item.dataTypeCode) {
+								return sourceData3[i].meaning;
+							}
+						}
+		                return '';
+					}, 
+				},{
+					display : '<@spring.message "hps.alt.alert.default_value"/>',
+					name : 'defaultValue',
+					width : 100,
+					editor : {
+	            		type : 'text',
+	            	}
+				},{
+					display : '<@spring.message "hps.alt.alert.sql_statement"/>',
+					name : 'sqlStatement',
+					width : 100,
+					editor : {
+						type : 'text',
+							
+	            	}
+				}],
+				toolbar : {
+					items : [{
+						text : '<@spring.message "hap.save"/>',
+	                    click : function() {
+	                        Hap.gridSave({
+	                            grid : alert_input_grid,
+	                            url : '${base.contextPath}/alt/input/submit'
+	                        })
+	                    },
+	                    icon : 'save'
+					}]
+				},
+				 onBeforeEdit:function(item){
+				 	///获取编辑的列名name,以及当前行的数据data
+				    var name = item.column.name,data = item.record;
+				    //判断编辑的列名
+				     if(name == 'sqlStatement'&&data.inputTypeCode=="C" || name == 'defaultValue'&&data.inputTypeCode=="S"){
+				         return false;
+				     }
+				     return true;
+				}, 
+				url:'${base.contextPath}/alt/input/query',
+				delayLoad : true,
+				width : '99%',
+				height : '160px',
+				enabledEdit : true,
+			});
+			
+			window["alert_output_grid"] = $("#alert_output_grid").ligerGrid({
+				usePager           : true,
+				unSetValidateAttr  : false,
+				columns: [{
+					display : '<@spring.message "hps.alt.alert.output_name"/>',
+					name : 'outputName',
+					width : 100,
+				},{
+					display : '<@spring.message "hps.alt.alert.description"/>',
+					name : 'outputTitle',
+					width : 100,
+					editor : {
+	            		type : 'text',
+	            	}
+				},{
+					display : '<@spring.message "hps.alt.alert.detailmaxlen"/>',
+					name : 'detailMaxLen',
+					width : 100,
+					editor : {
+	            		type : 'text',
+	            	}
+				},{
+					display : '<@spring.message "hps.alt.alert.summarymaxlen"/>',
+					name : 'summaryMaxLen',
+					width : 100,
+					editor : {
+	            		type : 'text',
+	            	}
+				}],
+				toolbar : {
+					items : [{
+						text : '<@spring.message "hap.save"/>',
+	                    click : function() {
+	                        Hap.gridSave({
+	                            grid : alert_output_grid,
+	                            url : '${base.contextPath}/alt/output/submit'
+	                        })
+	                    },
+	                    icon : 'save'
+					}]
+				},
+				url : '${base.contextPath}/alt/output/query',
+				delayLoad : true,
+				width : '99%',
+				height : '150px',
+				enabledEdit : true,
+			});
+			
+			/*
+				预警计划
+			*/
+			window["alert_plan_form"] = $("#alert_plan_form").ligerForm({
+					space: 40,
+					fields : [{
+						label: '<@spring.message "hps.alt.alert.frequency"/>', 
+						name: "frequencyTypeCode", 
+						type: "combobox" , 
+						group: '<@spring.message "hps.alt.alert.hapfrequency"/>',
+						validate: {
+			                    required: true
+			            },
+						options : {
+							autocomplete : true,
+							valueField : 'lookupCode',
+							textField : 'meaning',
+							data : sourceData4,
+							value : 'M',
+							onSelected: function (value){
+								liger.get('continuousCycle').setValue(0);
+								liger.get('intervalCycle').setValue(0);
+								var ul = $("#alert_plan_form > div").children("ul");
+								if(value == 'M'){
+									for (var i = 1; i < (ul.length-3); i++) {
+										$(ul[i]).css("display","none")
+									}
+									$(ul[1]).css("display","block");
+									liger.get('intervalCycle').setEnabled();
+									liger.get('continuousCycle').setEnabled();
+									liger.get('cycleStartTime').setEnabled();
+									liger.get('cycleEndTime').setEnabled();
+									
+								}
+								if(value == 'W'){
+									for (var i = 1; i < (ul.length-3); i++) {
+										$(ul[i]).css("display","none")
+									}
+									$(ul[2]).css("display","block");
+									liger.get('intervalCycle').setEnabled();
+									liger.get('lastdate').setDisabled();
+									liger.get('continuousCycle').setEnabled();
+									liger.get('cycleStartTime').setEnabled();
+									liger.get('cycleEndTime').setEnabled();
+								}
+								if(value == 'D'){
+									for (var i = 1; i < (ul.length-3); i++) {
+										$(ul[i]).css("display","none")
+									}
+									liger.get('intervalCycle').setEnabled();
+									liger.get('lastdate').setDisabled();
+									liger.get('continuousCycle').setEnabled();
+									liger.get('cycleStartTime').setEnabled();
+									liger.get('cycleEndTime').setEnabled();
+								}
+								if(value == 'OD'){
+									for (var i = 1; i < (ul.length-3); i++) {
+										$(ul[i]).css("display","none")
+									}
+									$(ul[3]).css("display","block");
+									liger.get('intervalCycle').setDisabled();
+									liger.get('cycleStartTime').setDisabled();
+									liger.get('cycleEndTime').setDisabled();
+									liger.get('continuousCycle').setDisabled();
+									liger.get('lastdate').setDisabled();
+								}
+								if(value == 'MD'){
+									for (var i = 1; i < (ul.length-3); i++) {
+										$(ul[i]).css("display","none")
+									}
+									$(ul[4]).css("display","block");
+									liger.get('intervalCycle').setDisabled();
+									liger.get('cycleStartTime').setDisabled();
+									liger.get('continuousCycle').setEnabled();
+									liger.get('cycleEndTime').setDisabled();
+									liger.get('lastdate').setDisabled();
+								}
+			                }
+						} 
+					},{
+						label: '<@spring.message "hps.alt.alert.intervalcycle"/>',
+						name: "intervalCycle", 
+						type: "spinner",
+						group: '<@spring.message "hps.alt.alert.hapfrequency"/>',
+						newline : false,
+						validate : {
+							digits:true,
+							step: 1, 
+							//required:true,
+							isNegative: false,
+						},
+						editor: { type: 'int'} ,						
+						options : {
+							disabled : false,
+							minValue:0,
+							isNegative: false,
+							onChangeValue : function(){
+								var data_plan = $('#alert_plan_form').ligerForm().getData();
+								if(data_plan.frequencyTypeCode == "M"){
+									liger.get('intervalCycle').options.maxValue = 12;
+								}
+								if(data_plan.frequencyTypeCode == "W"){
+									liger.get('intervalCycle').options.maxValue = 5;
+								}
+								if(data_plan.frequencyTypeCode == "D"){
+									liger.get('intervalCycle').options.maxValue = 31;
+								}
+								
+							}
+						}
+					},{
+						label : '<@spring.message "hps.alt.alert.monthlydaynum"/>',
+						name: "monthlyDayNum", 
+						type: "spinner",
+						group: '<@spring.message "hps.alt.alert.monthly"/>',
+						options : {
+							type : 'int',
+							
+							step : 1,
+							minValue:1,
+							maxValue : 31,
+							disabled : false,
+						}
+					},{
+						label : '<@spring.message "hps.alt.alert.monday"/>',						
+						name : 'weeklyDayMon',
+						type : "checkbox",
+						group: '<@spring.message "hps.alt.alert.week"/>',
+						width : 80,
+						options : {
+		                	checkValue :　'2',
+		                	uncheckValue : 'N',    
+		                },
+					},{
+						label : '<@spring.message "hps.alt.alert.tuesday"/>',						
+						name : 'weeklyDayTues',
+						type : "checkbox",
+						newline : false,
+						width : 80,
+						options : {
+		                	checkValue :　'3',
+		                	uncheckValue : 'N',    
+		                },
+					},{
+						label : '<@spring.message "hps.alt.alert.wednesday"/>',						
+						name : 'weeklyDayWed',
+						type : "checkbox",
+						newline : false,
+						group: "<@spring.message "hps.alt.alert.week"/>",
+						width : 80,
+						options : {
+		                	checkValue :　'4',
+		                	uncheckValue : 'N',    
+		                },
+					},{
+						label : '<@spring.message "hps.alt.alert.thursday"/>',						
+						name : 'weeklyDayThur',
+						type : "checkbox",
+						newline : false,
+						group: "<@spring.message "hps.alt.alert.week"/>",
+						width : 80,
+						options : {
+		                	checkValue :　'5',
+		                	uncheckValue : 'N',    
+		                },
+					},{
+						label : '<@spring.message "hps.alt.alert.friday"/>',						
+						name : 'weeklyDayFri',
+						type : "checkbox",
+						group: "<@spring.message "hps.alt.alert.week"/>",
+						newline : false,
+						width : 80,
+						options : {
+		                	checkValue :　'6',
+		                	uncheckValue : 'N',    
+		                },
+					},{
+						label : '<@spring.message "hps.alt.alert.saturday"/>',						
+						name : 'weeklyDaySat',
+						type : "checkbox",
+						group: "<@spring.message "hps.alt.alert.week"/>",
+						newline : false,
+						width : 80,
+						options : {
+		                	checkValue :　'7',
+		                	uncheckValue : 'N',    
+		                },
+					},{
+						label : '<@spring.message "hps.alt.alert.sunday"/>',						
+						name : 'weeklyDaySun',
+						type : "checkbox",
+						group: "<@spring.message "hps.alt.alert.week"/>",
+						newline : false,
+						width : 80,
+						options : {
+		                	checkValue :　'1',
+		                	uncheckValue : 'N',    
+		                },
+					},{
+						label : '<@spring.message "hps.alt.alert.executiontime"/>',
+						group : '<@spring.message "hps.alt.alert.day"/>',
+						type : 'date',
+						name : 'executionTime',
+						options : {
+							format      : "hh:mm:ss",
+							showTime    : true,
+						},
+						validate : {
+							required : true
+						}
+						
+					},{
+						label : '<@spring.message "hps.alt.alert.timestart"/>',
+						type : 'date',
+						group : '<@spring.message "hps.alt.alert.manydaily"/>',
+						name : 'executionStartTime',
+						options : {
+							format      : "hh:mm:ss",
+							showTime    : true,
+						},
+						validate : {
+							required : true
+						}
+					},{
+						label : '<@spring.message "hps.alt.alert.endtime"/>',
+						type : 'date',
+						name : 'executionEndTime',
+						newline : false,
+						options : {
+							disabled : false,
+							showTime    : true,
+                    		format      : "hh:mm:ss",
+						},
+						validate : {
+							required : true
+						}
+					},{
+						label : '<@spring.message "hps.alt.alert.cycle"/>',
+						name : 'continuousCycle',
+						type : "spinner",
+						group  : '<@spring.message "hps.alt.alert.cycletime"/>',
+						options : {
+							type : 'int',
+							step : 1,
+							minValue:0,
+							maxValue : 100,
+							onChangeValue : function(){
+								var data_plan = $('#alert_plan_form').ligerForm().getData();
+								if(data_plan.frequencyTypeCode == "M"){
+									liger.get('continuousCycle').options.maxValue = 12;
+								}
+								if(data_plan.frequencyTypeCode == "W"){
+									liger.get('continuousCycle').options.maxValue = 7;
+								}
+								if(data_plan.frequencyTypeCode == "D"){
+									liger.get('continuousCycle').options.maxValue = 31;
+								}
+								
+							}
+						}
+					}, {
+						label : '<@spring.message "hps.alt.alert.cyclestart"/>',
+						type : 'date',
+						name : 'cycleStartTime',
+						options : {
+								showTime : true,
+								format : "hh:mm:ss"
+						
+						},
+						validate : {
+							required : true
+						}
+					},{
+						label : '<@spring.message "hps.alt.alert.cycleend"/>',
+						type : 'date',
+						name : 'cycleEndTime',
+						newline : false,
+						options : {
+								showTime : true,
+								format : "hh:mm:ss",
+						},
+						validate : {
+							required : true
+						}
+					},{
+						label : '<@spring.message "hps.alt.alert.cyclelasttime"/>',
+						type : 'date',
+						name : 'lastdate',
+						editor : {
+							options : {
+								showTime : true,
+								format : "yyyy-MM-dd hh:mm:ss"
+								
+							}
+						},
+					},{
+						type : 'hidden',
+						name : 'cronExpression',
+					}],
+					buttons : [{
+						text : '<@spring.message "hap.save"/>',
+						disabled : false,
+		                width : 60,
+		                click : function() {
+		                    /* if (!(Hap.validateForm($('#alertQueryForm'))||Hap.validateForm($('#alertQueryForm')))){
+	                    		return;
+	                		} */
+	                		
+	                		var form = liger.get('alertQueryForm');
+					        if (!(form.valid())) {
+					           form.showInvalid();
+					            return;
+					        }
+					        
+	                		 
+	                		 
+	                		var data = $('#alertQueryForm').ligerForm().getData();
+	                		var data_plan = $('#alert_plan_form').ligerForm().getData();
+	                		
+
+	                		var pData = jQuery.extend(true, {}, data);
+	                		
+	                		
+	                		if (data_plan.frequencyTypeCode == "M") {
+	                			pData.frequencyTypeCode = data_plan.frequencyTypeCode;
+	                			pData.intervalCycle = data_plan.intervalCycle;
+	                			pData.monthlyDayNum = data_plan.monthlyDayNum;
+	                			pData.cycleStartTime = data_plan.cycleStartTime;
+	                			pData.cycleEndTime = data_plan.cycleEndTime;
+	                			pData.continuousCycle = data_plan.continuousCycle;
+	                			var temp = "";
+	                			if(data_plan.intervalCycle == 0){
+	                				temp = ""
+	                			}else{
+	                				temp = "/"+data_plan.intervalCycle;
+	                			}
+	                			
+	                			//获取开始时间
+	                			var date1 = new Date(data_plan.cycleStartTime);
+	                			var date2 = new Date(data_plan.cycleEndTime);
+	                			 
+	                			var s1 = date1.getTime(),s2 = date2.getTime();
+	                			var total = (s2 - s1)/1000;
+	                			 
+	                			 
+	                			var day = parseInt(total / (24*60*60));//计算整数天数
+	                			var afterDay = total - day*24*60*60;//取得算出天数后剩余的秒数
+	                			var hour = parseInt(afterDay/(60*60));//计算整数小时数
+	                			var afterHour = total - day*24*60*60 - hour*60*60;//取得算出小时数后剩余的秒数
+	                			var min = parseInt(afterHour/60);//计算整数分
+	                			var afterMin = total - day*24*60*60 - hour*60*60 - min*60;//取得算出分后剩余的秒数
+	                			var cycle = data_plan.continuousCycle;
+	                			var continuousCycleTime =  Math.floor((hour*60 + min)/cycle);
+	                			var finalHour = parseInt(continuousCycleTime/60);
+	                			var finalMin = continuousCycleTime % 60;
+	                			
+	                			
+	                			var z = data_plan.cycleStartTime + finalTime;
+	                			
+	                			var a = data_plan.cycleStartTime.toString();   
+	                			var b = a.split(" ");
+	                			var timeS = b[4].split(":");
+	                			var mycron="";
+	                			var finalTime = new Date(data_plan.cycleStartTime);
+	                			if(cycle == 0){
+	                				if(temp == ""){
+	                					mycron = date1.getSeconds()+" "+ date1.getMinutes() +" "+ date1.getHours()+" "+data_plan.monthlyDayNum+" * ?";
+	                				}else{
+	                					mycron = date1.getSeconds()+" "+ date1.getMinutes() +" "+ date1.getHours()+" "+data_plan.monthlyDayNum+" 1"+temp+" ?";
+	                				}
+	                				
+	                			}else{
+	                				for(var i=0;i<cycle;i++){
+			                			finalTime.setHours(finalTime.getHours() + finalHour);
+			                			finalTime.setMinutes(finalTime.getMinutes() + finalMin);
+			                			finalTime.setSeconds(0);
+		                				if(temp == ""){
+				                			var cron = finalTime.getSeconds()+" "+ finalTime.getMinutes() +" "+ finalTime.getHours()+" "+data_plan.monthlyDayNum+" * ?";
+				                			mycron = mycron + "$" + cron;
+			                			}else{
+			                				var cron = finalTime.getSeconds()+" "+ finalTime.getMinutes() +" "+ finalTime.getHours()+" "+data_plan.monthlyDayNum+" 1"+temp+" ?";
+				                			mycron = mycron + "$" + cron;
+			                			}
+		                			}
+	                			}
+	                			
+	                			
+	                			
+	                			
+	                			//var mycron = "0 "+"0 "+"0 "+ data_plan.monthlyDayNum + "1/"+intervalCycle+"? ";
+	                			
+	                			pData.cronExpression = mycron;
+							}
+	                		if (data_plan.frequencyTypeCode == "W") {
+	                			var weeks = new Array();
+	                			var week = ""; 
+	                			weeks[0] = data_plan.weeklyDayMon;
+	                			weeks[1] = data_plan.weeklyDayTues;
+	                			weeks[2] = data_plan.weeklyDayWed;	
+	                			weeks[3] = data_plan.weeklyDayThur;
+	                			weeks[4] = data_plan.weeklyDayFri;
+	                			weeks[5] = data_plan.weeklyDaySat;
+	                			weeks[6] = data_plan.weeklyDaySun;
+	                			
+	                			pData.frequencyTypeCode = data_plan.frequencyTypeCode;
+	                			pData.intervalCycle = data_plan.intervalCycle;
+	                			pData.weeklyDayMon = data_plan.weeklyDayMon;
+	                			pData.weeklyDayTues = data_plan.weeklyDayTues;
+	                			pData.weeklyDayWed = data_plan.weeklyDayWed;
+	                			pData.weeklyDayThur = data_plan.weeklyDayThur;
+	                			pData.weeklyDayFri = data_plan.weeklyDayFri;
+	                			pData.weeklyDaySat = data_plan.weeklyDaySat;
+	                			pData.weeklyDaySun = data_plan.weeklyDaySun;
+	                			pData.cycleStartTime = data_plan.cycleStartTime;
+	                			pData.cycleEndTime = data_plan.cycleEndTime;
+	                			pData.continuousCycle = data_plan.continuousCycle;
+	                			
+								//获取开始时间
+	                			
+	                			var date1 = new Date(data_plan.cycleStartTime);
+	                			var date2 = new Date(data_plan.cycleEndTime);
+	                			 
+	                			var s1 = date1.getTime(),s2 = date2.getTime();
+	                			var total = (s2 - s1)/1000;
+	                			 
+	                			 
+	                			var day = parseInt(total / (24*60*60));//计算整数天数
+	                			var afterDay = total - day*24*60*60;//取得算出天数后剩余的秒数
+	                			var hour = parseInt(afterDay/(60*60));//计算整数小时数
+	                			var afterHour = total - day*24*60*60 - hour*60*60;//取得算出小时数后剩余的秒数
+	                			var min = parseInt(afterHour/60);//计算整数分
+	                			var afterMin = total - day*24*60*60 - hour*60*60 - min*60;//取得算出分后剩余的秒数
+	                			var cycle = data_plan.continuousCycle;
+	                			var continuousCycleTime =  Math.floor((hour*60 + min)/cycle);
+	                			var finalHour = parseInt(continuousCycleTime/60);
+	                			var finalMin = continuousCycleTime % 60;
+	                			
+	                			
+	                			var z = data_plan.cycleStartTime + finalTime;
+	                			
+	                			var a = data_plan.cycleStartTime.toString();   
+	                			var b = a.split(" ");
+	                			var timeS = b[4].split(":");
+	                			
+	                			var temp = "";
+	                			if(data_plan.intervalCycle == 0){
+	                				temp = ""
+	                			}else{
+	                				temp = "/"+data_plan.intervalCycle;
+	                			}
+	                			
+	                			for(var i=0;i<weeks.length;i++){
+	                				if(weeks[i] != "N"){
+	                					week = week+weeks[i]+",";
+	                				}
+	                			}
+	                			week = week.substring(0,week.length-1);
+	                			var mycron="";
+	                			var finalTime = new Date(data_plan.cycleStartTime);
+	                			if(cycle == 0){
+	                				if(temp == ""){
+	                					mycron = date1.getSeconds()+" "+ date1.getMinutes() +" "+ date1.getHours()+" ? * "+week;
+	                				}else{
+	                					mycron = date1.getSeconds()+" "+ date1.getMinutes() +" "+ date1.getHours()+" ? * "+week+temp;
+	                				}
+	                				
+	                			}else{
+	                				for(var i=0;i<cycle;i++){
+			                			finalTime.setHours(finalTime.getHours() + finalHour);
+			                			finalTime.setMinutes(finalTime.getMinutes() + finalMin);
+			                			finalTime.setSeconds(0);
+			                			if(temp == ""){
+				                			var cron = finalTime.getSeconds()+" "+ finalTime.getMinutes() +" "+ finalTime.getHours()+" ? * "+week;
+				                			mycron = mycron + "$" + cron;
+			                			}else{
+			                				var cron = finalTime.getSeconds()+" "+ finalTime.getMinutes() +" "+ finalTime.getHours()+" ? * "+week+temp;
+				                			mycron = mycron + "$" + cron;
+			                			}
+		                			}
+	                			}
+	                			pData.cronExpression = mycron;
+							}
+	                		if (data_plan.frequencyTypeCode == "D") {
+	                			pData.frequencyTypeCode = data_plan.frequencyTypeCode;
+	                			pData.intervalCycle = data_plan.intervalCycle;
+	                			pData.cycleStartTime = data_plan.cycleStartTime;
+	                			pData.cycleEndTime = data_plan.cycleEndTime;
+	                			pData.continuousCycle = data_plan.continuousCycle;
+	                			
+	                			
+								//获取开始时间
+	                			var date1 = new Date(data_plan.cycleStartTime);
+	                			var date2 = new Date(data_plan.cycleEndTime);
+	                			 
+	                			var s1 = date1.getTime(),s2 = date2.getTime();
+	                			var total = (s2 - s1)/1000;
+	                			 
+	                			 
+	                			var day = parseInt(total / (24*60*60));//计算整数天数
+	                			var afterDay = total - day*24*60*60;//取得算出天数后剩余的秒数
+	                			var hour = parseInt(afterDay/(60*60));//计算整数小时数
+	                			var afterHour = total - day*24*60*60 - hour*60*60;//取得算出小时数后剩余的秒数
+	                			var min = parseInt(afterHour/60);//计算整数分
+	                			var afterMin = total - day*24*60*60 - hour*60*60 - min*60;//取得算出分后剩余的秒数
+	                			var cycle = data_plan.continuousCycle;
+	                			var continuousCycleTime =  Math.floor((hour*60 + min)/cycle);
+	                			var finalHour = parseInt(continuousCycleTime/60);
+	                			var finalMin = continuousCycleTime % 60;
+	                			
+	                			
+	                			var z = data_plan.cycleStartTime + finalTime;
+	                			
+	                			var a = data_plan.cycleStartTime.toString();   
+	                			var b = a.split(" ");
+	                			var timeS = b[4].split(":");
+	                			
+	                			
+	                			var temp = "";
+	                			if(data_plan.intervalCycle == 0){
+	                				temp = ""
+	                			}else{
+	                				temp = "/"+data_plan.intervalCycle;
+	                			}
+	                			
+	                			var mycron="";
+	                			var finalTime = new Date(data_plan.cycleStartTime);
+	                			if(cycle == 0){
+	                				if(temp == ""){
+	                					mycron = date1.getSeconds()+" "+ date1.getMinutes() +" "+ date1.getHours()+" * * ?";
+	                				}else{
+	                					mycron = date1.getSeconds()+" "+ date1.getMinutes() +" "+ date1.getHours()+" 1"+temp+" * ?";
+	                				}
+	                				
+	                			}else{
+	                				for(var i=0;i<cycle;i++){
+			                			finalTime.setHours(finalTime.getHours() + finalHour);
+			                			finalTime.setMinutes(finalTime.getMinutes() + finalMin);
+			                			finalTime.setSeconds(0);
+			                			if(temp == ""){
+				                			var cron = finalTime.getSeconds()+" "+ finalTime.getMinutes() +" "+ finalTime.getHours()+" * * ?";
+				                			mycron = mycron + "$" + cron;
+			                			}else{
+			                				var cron = finalTime.getSeconds()+" "+ finalTime.getMinutes() +" "+ finalTime.getHours()+" 1"+temp+" * ?";
+				                			mycron = mycron + "$" + cron;
+			                			}
+		                			}
+	                			}
+	                			pData.cronExpression = mycron;
+							}
+							if (data_plan.frequencyTypeCode == "OD") {
+								if (data_plan.executionTime==null || data_plan.executionTime.length==0) {
+									liger.get('alert_plan_form').validField('executionTime');
+									return;
+								}
+	                			pData.frequencyTypeCode = data_plan.frequencyTypeCode;
+	                			pData.executionTime = data_plan.executionTime;
+	                			var a = data_plan.executionTime.toString();   
+	                			var b = a.split(" ");
+	                			var time = b[4].split(":");
+	                			var mycron = time[2] +" "+ time[1] +" "+ time[0] +" * * ?";
+	                			pData.cronExpression = mycron;
+							}
+							if (data_plan.frequencyTypeCode == "MD") {
+								
+								//获取开始时间
+	                			var date1 = new Date(data_plan.executionStartTime);
+	                			var date2 = new Date(data_plan.executionEndTime);
+	                			 
+	                			var s1 = date1.getTime(),s2 = date2.getTime();
+	                			var total = (s2 - s1)/1000;
+	                			 
+	                			
+	                			var day = parseInt(total / (24*60*60));//计算整数天数
+	                			var afterDay = total - day*24*60*60;//取得算出天数后剩余的秒数
+	                			var hour = parseInt(afterDay/(60*60));//计算整数小时数
+	                			var afterHour = total - day*24*60*60 - hour*60*60;//取得算出小时数后剩余的秒数
+	                			var min = parseInt(afterHour/60);//计算整数分
+	                			var afterMin = total - day*24*60*60 - hour*60*60 - min*60;//取得算出分后剩余的秒数
+	                			var cycle = data_plan.continuousCycle;
+	                			var continuousCycleTime =  Math.floor((hour*60 + min)/cycle);
+	                			var finalHour = parseInt(continuousCycleTime/60);
+	                			var finalMin = continuousCycleTime % 60;
+	                			
+	                			
+	                			var z = data_plan.executionStartTime + finalTime;
+	                			
+	                			var a = data_plan.executionStartTime.toString();   
+	                			var b = a.split(" ");
+	                			var timeS = b[4].split(":");
+	                			
+	                			var mycron = "";
+	                			var finalTime = new Date(data_plan.executionStartTime);
+	                			for(var i=0;i<cycle;i++){
+		                			finalTime.setHours(finalTime.getHours() + finalHour);
+		                			finalTime.setMinutes(finalTime.getMinutes() + finalMin);
+		                			finalTime.setSeconds(0);
+			                		var cron = finalTime.getSeconds()+" "+ finalTime.getMinutes() +" "+ finalTime.getHours()+" * * ?";
+			                		mycron = mycron + "$" + cron;
+		                			
+	                			}
+	                			
+								pData.frequencyTypeCode = data_plan.frequencyTypeCode;
+	                			pData.intervalCycle = data_plan.intervalCycle;
+	                			pData.executionStartTime = data_plan.executionStartTime;
+	                			pData.executionEndTime = data_plan.executionEndTime;
+	                			pData.continuousCycle = data_plan.continuousCycle;
+	                			pData.cronExpression = mycron;
+							}
+	                		$.ajax({	
+	                			type : "post",
+	                			url: "${base.contextPath}/alt/alert/submit",
+	                			data : pData,
+	                			success : function(json){
+	                				$.ligerDialog.success("<@spring.message "hap.tip.success"/>", '<@spring.message "hap.tip.info"/>', function(){});
+	                			},
+	                			error : function(json){
+	                				$.ligerDialog.success(json.message, '<@spring.message "hap.tip.info"/>', function(){});
+	                			}
+	                		})
+		                }
+					}],
+				});
+				
+				
+			
+			//初始化隐藏部分频率条件
+			var ulo = $("#alert_plan_form > div").children("ul");			
+			for (var i = 1; i < (ulo.length-3); i++) {
+				$(ulo[i]).css("display","none")
+			}
+			$(ulo[1]).css("display","block");
+			
+			
+			/*
+				预警事件
+			*/
+			window["alert_event_form"] = $("#alert_event_form").ligerForm({
+				fields : [{
+					label : '<@spring.message "hps.alt.alert.table_owner"/>',
+					name : 'tableOwner',
+					type : 'text',
+					group : '<@spring.message "hps.alt.alert.eventgroup"/>',
+				},{
+					label : '<@spring.message "hps.alt.alert.table_name"/>',
+					name : 'tableName',
+					type : 'popup',
+					group : '<@spring.message "hps.alt.alert.eventgroup"/>',
+					newline : false,
+					textField : 'tableName',
+					options : {
+						textField : 'tableName',
+						grid : {
+							columns : [{
+								display: '<@spring.message "hps.alt.alert.table_name"/>',
+		                        name   : "tableName",
+		                        width  : 200,
+		                        type   : "text",
+		                        align  : "left"
+							}],
+							height : 350,
+					 		url : '${base.contextPath}/alt/alert/table',
+						},
+						onLoadData: function() {
+				            this.setParm('tableOwner', liger.get('tableOwner').getValue());
+				        },
+				        condition : {
+					 		inputWidth: 150,
+                    		labelWidth: 70,
+                    		fields : [{
+                    			
+                    			display : '<@spring.message "hps.alt.alert.table_name"/>',
+                    			name   : "tableName",
+		                        newline: false,
+		                        type   : "text"
+                    		}]
+					 	}
+				        
+					}
+				},{
+					type : 'checkbox',
+					name : 'insertFlag',
+					label : '<@spring.message "hps.alt.alert.after_insert"/>',
+					options : {
+						checkValue : 'Y',
+						uncheckValue : 'N'
+					}
+				},{
+					type : 'checkbox',
+					name : 'updateFlag',
+					label : '<@spring.message "hps.alt.alert.after_update"/>',
+					newline : false,
+					options : {
+						checkValue : 'Y',
+						uncheckValue : 'N'
+					}
+				},{
+					type : 'checkbox',
+					name : 'deleteFlag',
+					label : '<@spring.message "hps.alt.alert.after_delete"/>',
+					newline : false,
+					options : {
+						checkValue : 'Y',
+						uncheckValue : 'N'
+					}
+				}],
+				buttons : [{
+					text : '<@spring.message "hap.save"/>',
+					disabled : false,
+	                width : 60,
+	                click : function(){
+	                	if (!(Hap.validateForm($('#alertQueryForm')))) {
+	                    		return;
+	                	}
+	                	
+	                	var data = $('#alertQueryForm').ligerForm().getData();
+	                	var data_event = $('#alert_event_form').ligerForm().getData();
+	                	var pData = jQuery.extend(true, {}, data);
+	                	
+	                	pData.tableOwner = data_event.tableOwner;
+	                	pData.tableName = data_event.tableName;
+	                	pData.insertFlag = data_event.insertFlag;
+	                	pData.updateFlag = data_event.updateFlag;
+	                	pData.deleteFlag = data_event.deleteFlag;
+	                	
+
+	                	$.ajax({
+	                		type : "post",
+	                		url: "${base.contextPath}/alt/alert/submit",
+	                		data : pData,
+	                		success : function(json){
+	                			
+								$.ligerDialog.success("<@spring.message "hap.tip.success"/>", '<@spring.message "hap.tip.info"/>', function(){});
+	                		}
+	                	})
+	                	
+	                }
+				}],
+			});
+			
+			/*
+				预警活动
+			*/
+			<#assign isedit = (RequestParameters.isedit!'0')/>
+			
+			window["alert_action_grid"] = $("#alert_action_grid").ligerGrid({
+				unSetValidateAttr: false,
+				columns : [{
+					display : '预警活动名称',
+					name : 'actionName',
+	                align : 'center',
+	                width : "18%",
+	                editor : {
+	                	type : 'text',
+	                }
+				},{
+					display : '说明',
+					name : 'description',
+	                align : 'center',
+	                width : "18%",
+	                editor : {
+	                	type : 'text',
+	                }
+				},{
+					display : '活动层',
+					name : 'actionLevelCode',
+	                align : 'center',
+	                width : "18%",
+	                editor : {
+						type : 'select',
+						valueField : 'lookupCode',
+						textField : 'meaning',						
+						data : actionData,
+						slide : true,
+					},
+					render : function(item){
+						for(var i in actionData){
+							if (actionData[i].lookupCode==item.actionLevelCode) {
+								return actionData[i].meaning;
+							}
+						}
+						return "";
+					}
+				},{
+					display : '预警消息通知方式',
+					name : 'noticeTypeCode',
+	                align : 'center',
+	                width : "18%",
+	                editor : {
+						type : 'select',
+						valueField : 'lookupCode',
+						textField : 'meaning',						
+						data : noticeData,
+						slide : true,
+					},
+					render : function(item) {
+	                    for ( var i in noticeData) {
+	                        if (noticeData[i].lookupCode == item.noticeTypeCode) {
+	                            return noticeData[i].meaning;
+	                        }
+	                    }
+	                    return '';
+	                }
+				},{
+					display : '活动详细资料',
+					name : 'actionDetail',
+	                align : 'center',
+	                width : "18%",
+	                render : function(rowdata){
+	                	
+							// $.ligerDialog.error('不能在空节点下新建节点，请先保存', $l("hap.tip.info"));
+		                	if(!rowdata.actionId || rowdata.__status != 'nochanged'){
+								return '';
+							}
+							return '<a href="#" onclick="findAction(\''+rowdata.noticeTypeCode+'\''+',\''+rowdata.actionId+'\')">活动详细资料</a>'
+						
+	                	
+	                	
+	                }
+				}],
+				<#if isedit == '1'>
+	             url: '${base.contextPath}/alt/alert/action/query?alertId=${RequestParameters.alertId!}', 
+	            </#if>
+				toolbar : {
+					items : [{
+						text : '<@spring.message "hap.new"/>',
+	           			disable : false,
+	           			click : function() {
+							var arr = alert_action_grid.getData();
+	                        var i=0;
+	                        for(;i<arr.length;i++){
+	                            if(arr[i].__status=='add') {
+	                                break;
+	                            }
+	                        }
+	                        alert_action_grid.addRow()
+							},
+						icon : 'add'
+					},{
+						line :true,
+					},{
+						text : '<@spring.message "hap.delete"/>',
+						disable : false,
+						click : function(){
+							Hap.gridDelete({
+		                            grid : alert_action_grid,
+		                            url : '${base.contextPath}/alt/alert/action/delete',
+	                        })
+						},
+						icon : 'delete'
+					},{
+						line :true,
+					},{
+						text : '<@spring.message "hap.save"/>',
+						disable : false,
+						click : function(){
+							if (!(Hap.validateForm($('#alertQueryForm')))) {
+		                    		return;
+		                	}
+		                	
+		                	Hap.submitForm({
+				                form:alertQueryForm,
+				                grid:alert_action_grid,
+				                gridName:'alertActions',
+				                url:'${base.contextPath}/alt/alert/action/submit',
+				                success:function(json,opt){
+				                    $.ligerDialog.success("<@spring.message "hap.tip.success"/>", '<@spring.message "hap.tip.info"/>', function(){
+				                    	alert_action_grid.reload();
+				                    });
+				                    
+				                }
+				            });
+		                	
+		                	
+						},
+						icon : 'save'
+					}]
+				},
+				enabledEdit      : true,
+	            checkbox         : true,
+	            width            : '98%',
+	            height           : '98%'
+			});
+			
+			window.findAction = function(type,id){
+				if (type == "E") {
+					parent.f_addTab("action_"+id, "活动详细资料-电子邮件",'alt/alert_action_email.html?noticeTypeCode='+type+'&alertId=${RequestParameters.alertId}&actionId='+id+'');
+				}else if(type == "S"){
+					parent.f_addTab("action_"+id, "活动详细资料-系统信息",'alt/alert_action_system.html?noticeTypeCode='+type+'&alertId=${RequestParameters.alertId}&actionId='+id+'');
+				}else if(type == "M"){
+					alert(type);
+				}else{
+					return
+				}
+				
+			}
+			
+			
+		});
+	</script>
+
+
+</body>

@@ -1,0 +1,177 @@
+<#-- 
+ * description: 值集汇总界面
+ * version: 1.0 
+ * author:jie.yang03@hand-china.com
+ * #{copyright}#
+ * 
+-->
+<#include "../include/head.html"> 
+<#include "../include/hps.html">
+<body style="padding: 10px; overflow: hidden;">
+	<script src="${base.contextPath}/fnd/code?sourceData=HFS_FND_VALIDATION_TYPE" type="text/javascript"></script>
+	<form id="flexValueForm"></form>
+	<div id="flexValueGrid" style="margin: 0; padding: 0"></div>
+	<script type="text/javascript">
+		$(function() {
+			window['flexValueForm'] = $("#flexValueForm").ligerForm({
+				fields : [ {
+					type : 'text',
+					label : '<@spring.message "hps.fnd.flexvalue.name"/>',
+					name : 'flexValueSetName',
+					newline : false
+				}, {
+					type : 'text',
+					label : '<@spring.message "hps.fnd.flexvalue.description"/>',
+					name : 'description',
+					newline : false
+				} ],
+				buttons : [ {
+					text : '<@spring.message "hap.query"/>',
+					disabled : false,
+					width : 60,
+					click : function() {
+						Hap.gridQuery({
+							form : flexValueForm,
+							grid : flexValueGrid
+						})
+					}
+				}, {
+					text : '<@spring.message "hap.reset"/>',
+					disabled : false,
+					width : 60,
+					click : function() {
+						flexValueForm.reset();
+					}
+				} ],
+				onEnterDown : function() {
+					this.options.buttons[0].click();
+				}
+			});
+			window.editFlexValue = function(id,validationType) {
+				if(validationType == "I") {
+					//独立值集
+					window.popWin = $.ligerDialog.open({
+						load : false,
+						width : 700,
+						height : 550,
+						title : '<@spring.message "hps.fnd.flexvalue.independentvalueset"/>',
+						url : 'flex_value_edit.html?flexValueSetId='+id
+					});
+				}else if(validationType == "F"){
+				   //表验证值集
+				   window.popWin = $.ligerDialog.open({
+						load : false,
+						width : 900,
+						height : 550,
+						title : '<@spring.message "hps.fnd.flexvalue.tableflex"/>',
+						url : 'tableflex_edit.html?flexValueSetId='+id
+					});
+				}
+			}
+			window['flexValueGrid'] = $("#flexValueGrid").ligerGrid({
+				unSetValidateAttr : false,
+				columns : [{
+					display : '<@spring.message "hps.fnd.flexvalue.name"/>',
+					name : 'flexValueSetName',
+					align : 'center',
+					width : 270,
+					editor : {
+						type : 'text'
+					},
+					validate:{
+	                    required:true
+	                }
+				}, {
+					display : '<@spring.message "hps.fnd.flexvalue.validationtype"/>',
+					name : 'validationType',
+					align : 'center',
+					width : 120,
+					editor : {
+						type : 'select',
+						data : sourceData,
+						valueField : 'lookupCode',
+						textField : 'meaning',
+						slide : true
+					},render : function(item) {
+	                    for ( var i in sourceData) {
+	                        if (sourceData[i].lookupCode == item.validationType) {
+	                            return sourceData[i].meaning;
+	                        }
+	                    }
+	                    return '';
+	                },
+				},{
+					display : '<@spring.message "hps.fnd.flexvalue.description"/>',
+					name : 'description',
+					align : 'center',
+					width : 330,
+					type : 'tl',
+					editor : {
+						type : 'tl',
+						dto:'hps.fnd.dto.FlexVset',
+						idField :'flexValueSetId'
+					}
+				},{
+					display : '<@spring.message "hps.fnd.flexvalue.enabledflag"/>',
+					name : 'enabledFlag',
+					align : 'center',
+					width : 80,
+					render : Hap
+					.createGridCheckBoxRender()
+				},{
+					display : '<@spring.message "hap.action"/>',
+					width : 100,
+					align : 'center',
+					render : function(rowdata) {
+						if(!rowdata.flexValueSetId){
+							return '';
+						}
+						return '<a href="#" onclick="editFlexValue('+rowdata.flexValueSetId+',\''+rowdata.validationType+'\')"><@spring.message "hap.edit"/></a>';
+					}
+				}],
+				url : '${base.contextPath}/fnd/flexVset/queryFlexVset',
+				width : '100%',
+				height : '99%',
+				checkbox : false,
+				enabledEdit : true,
+				onBeforeEdit:function(e){
+					if(e.column.columnname == 'flexValueSetName' || e.column.columnname == 'validationType')
+						return e.record.__status == 'add';
+					return true;
+				},
+				toolbar : {
+					items : [{
+						text : '<@spring.message "hap.new"/>',
+						disable : false,
+						click : function() {
+							flexValueGrid.addRow({})
+						},
+						icon : 'add'
+					}, {
+						line : true
+					}, {
+						text : '<@spring.message "hap.save"/>',
+						click : function() {
+							Hap.gridSave({
+								grid : flexValueGrid,
+								url : '${base.contextPath}/fnd/flexVset/saveFlexVset'
+							})
+						},
+						icon : 'save'
+					}, {
+						line : true
+					}, {
+						text : '<@spring.message "hap.clean"/>',
+						click : function() {
+							clearRow(flexValueGrid);
+						},
+						icon : 'clear'
+					//img:'${base.contextPath}/resources/images/clear.png'
+					} ]
+				}
+			})
+		});
+	</script>
+</body>
+</html>
+

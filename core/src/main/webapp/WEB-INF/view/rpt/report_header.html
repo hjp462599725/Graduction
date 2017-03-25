@@ -1,0 +1,117 @@
+<#include "../include/head.html">
+<script src="${base.contextPath}/resources/js/rpt.js"></script>
+<body>
+<script src="${base.contextPath}/common/code?resourceTypeData=RPT.TEMPLATES_TYPE" type="text/javascript"></script>
+	<div id='myRptDiv'></div>
+	<form id="reportForm" ></form>
+	<form id="report_Form" ></form>
+	<div id = "reportResult"></div>
+	<script type="text/javascript">
+	
+	
+  var getLigerValue = function(_filedName){
+    	if(liger.get(_filedName)==null){
+    		return null;
+    	}
+    	else{
+    		return liger.get(_filedName).getvalue;
+    	
+    	}
+    }
+	$(function() {
+		 $("#reportResult").ligerPanel({
+                 showToggle : false,
+                 title :'报表展示',
+               	 width:'99%',
+                 height: 500,
+                 frameName :'leftFrame',
+                 url :'rport_result.html'
+             });
+	
+var reportForm = window['reportForm'] = $("#reportForm").ligerForm({
+            labelWidth : 80,
+            space	   :10,
+            fields : [
+            <#list parametersList as parameters> 
+            	${parameters.filedCode},
+            </#list>
+           ]
+        });
+        window['report_Form'] = $("#report_Form").ligerForm({
+        	labelWidth : 80,
+            space	   :10,
+            fields : [
+           	{
+                type : 'combobox',
+                label : '<@spring.message "hps.rpt.report.type"/>',
+                name : 'templateType',
+                newline : true,
+                group : '报表选择生成',
+                width : 100,
+                options : {
+	                valueField : 'value',
+	                textField : 'value',
+	                data : resourceTypeData,
+	                onSelected:function(value,text){
+	                	for(var i = 0;i<resourceTypeData.length;i++){
+		                	var templateId = liger.get("templateId");
+	                		templateId.setValue("");
+	                		if(resourceTypeData[i].value==value){
+	                			if(resourceTypeData[i].meaning=="Y"){
+	                				this.setEnabled('templateId', false);
+	                				liger.get('templateId').setRequired(true);
+	                			}else{
+	                				this.setEnabled('templateId', true);
+	                				liger.get('templateId').setRequired(false);
+	                			}
+	                		}
+	                	}
+	                	
+	                }
+	            },
+                validate: {
+                    required: true
+                }
+            } ,{
+                type : 'combobox',
+                label : '<@spring.message "hps.rpt.template.name"/>',
+                name : 'templateId',
+                newline : false,
+                width : 100,
+                group : '报表选择生成',
+                options : {
+	                valueField : 'templateId',
+	                textField : 'templateName',
+	                readonly : false,
+	                url : '${base.contextPath}/rpt/template/query?reportId='+${RequestParameters.reportId},
+					triggerToLoad: true,
+			        onBeforeOpen: function() {
+			            //这里设置查询参数
+			            this.setParm('templateType', liger.get("templateType").getValue());
+			            this.triggerLoaded = false;//注意
+			        }
+	            },
+                validate: {
+                    required: false
+                }
+            } ],
+            buttons : [ {
+                text : '<@spring.message "hps.rpt.report.generatereport"/>',
+                disabled : false,
+                newline : true,
+                width : 80,
+                click : function() {
+                printReport({
+                	form : reportForm,
+                	reportTemplateId : liger.get("templateId").getValue(),
+                	reportType : liger.get("templateType").getValue(),
+                	reportId : ${RequestParameters.reportId},
+                	url : '${base.contextPath}/rpt/filed/generate_report'
+                	});
+            }}]
+       	});
+       	liger.get("templateType").setValue("EXCEL");
+	});
+ </script>
+</body>
+</html>

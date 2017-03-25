@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="hps.alt.mapper.AlertOutputMapper">
+	<resultMap type="hps.alt.dto.AlertOutput" id="BaseResult">
+		<id column="ALERT_OUTPUT_ID" property="alertOutputId" jdbcType="DECIMAL"/>
+		<result column="ALERT_ID" property="alertId" jdbcType="DECIMAL"/>
+		<result column="OUTPUT_NAME" property="outputName" jdbcType="VARCHAR"/>
+		<result column="OUTPUT_TITLE" property="outputTitle" jdbcType="VARCHAR"/>
+		<result column="DETAIL_MAX_LEN" property="detailMaxLen" jdbcType="DECIMAL"/>
+		<result column="SUMMARY_MAX_LEN" property="summaryMaxLen" jdbcType="DECIMAL"/>
+	</resultMap>
+	
+	<insert id="insertAltOutputName" parameterType="hps.alt.dto.AlertOutput">
+		<selectKey resultType="Long" keyProperty="alertOutputId" order="BEFORE">
+			select HPS_ALT_ALERT_OUTPUT_S.nextVal from dual
+		</selectKey>
+		INSERT INTO 
+			HPS_ALT_ALERT_OUTPUT(ALERT_OUTPUT_ID,ALERT_ID,OUTPUT_NAME)
+		VALUES
+			(#{alertOutputId,javaType=java.lang.Long},#{alertId,javaType=java.lang.Long},#{outputName,javaType=java.lang.String})
+	</insert>
+	
+	<delete id="deleteAltOutputName" parameterType="java.lang.Long">
+		delete from HPS_ALT_ALERT_OUTPUT 
+		where ALERT_ID = #{alertId,javaType=java.lang.Long}
+	</delete>
+	
+	<select id="queruyAlertOutputs" parameterType="hps.alt.dto.AlertOutput" resultMap="BaseResult">
+		select t.output_name,t.output_title from hps_alt_alert_output t
+		<where>
+			<if test="alertId != null">
+				t.alert_id = #{alertId,javaType=java.lang.Long}
+			</if>
+		</where>
+	</select>
+</mapper>
+
+

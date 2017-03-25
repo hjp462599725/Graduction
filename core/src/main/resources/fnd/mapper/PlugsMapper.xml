@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="hps.fnd.mapper.PlugsMapper">
+	<resultMap type="hps.fnd.dto.Plugs" id="BaseResult">
+		<id column="PLUG_ID" property="plugId" jdbcType="DECIMAL" />
+		<result column="PLUG_TYPE_CODE" property="plugTypeCode" jdbcType="VARCHAR" />
+		<result column="PLUG_NAME" property="plugName" jdbcType="VARCHAR" />
+		<result column="PLUG_DESCRIPTION" property="plugDescription" jdbcType="VARCHAR" />
+		<result column="AUTHOR_NAME" property="authorName" jdbcType="VARCHAR" />
+		<result column="AUTHOR_EMAIL" property="authorEmail" jdbcType="VARCHAR" />
+		<result column="ENABLED_FLAG" property="enabledFlag" jdbcType="VARCHAR" />
+		<result column="PLUG_TYPE_NAME" property="plugTypeName" jdbcType="VARCHAR"/>
+   		<result column="PLUG_TYPE_QTY" property="plugTypeQty" jdbcType="DECIMAL"/>
+	</resultMap>
+	
+	<resultMap type="hps.fnd.dto.PlugCount" id="pulgCountResult">
+		<result column="PLUG_TYPE_NAME" property="plugTypeName" jdbcType="VARCHAR"/>
+   		<result column="PLUG_TYPE_QTY" property="plugTypeQty" jdbcType="DECIMAL"/>
+	</resultMap>
+	
+	<select id="selectFileId" parameterType="java.lang.Long" resultType="java.lang.Long">
+		select b.file_id from sys_attachment a ,sys_file b where a.attachment_id = b.attachment_id 
+		and a.source_key = #{sourceKey,javaType=java.lang.Long}
+	</select>
+	
+	<select id="queryDownloadPlugs" parameterType="hps.fnd.dto.Plugs" resultMap="BaseResult">
+			select t.plug_id,
+			       t.plug_type_code,
+			       t.plug_name,
+			       t.plug_description,
+			       t.author_name,
+			       t.author_email,
+			       t.enabled_flag
+			  from hps_fnd_plugs t
+			 where t.enabled_flag = 'Y'
+	</select>
+	
+	<!-- 查询 插件统计情况 xianzhi.chen@hand-china.com-->
+	<select id="queryPlugCount" parameterType="hps.fnd.dto.PlugCount" resultMap="pulgCountResult">
+		SELECT flv.meaning plug_type_name,
+		       COUNT(hfp.plug_id) plug_type_qty
+		  FROM hps_fnd_plugs           hfp,
+		       hps_fnd_lookup_value_vl flv
+		 WHERE hfp.plug_type_code = flv.lookup_code
+		   AND flv.lookup_type = 'HPS_FND_PLUG_TYPE'
+		   AND flv.lang = #{request.locale,jdbcType = VARCHAR, javaType = java.lang.String}
+		 GROUP BY flv.meaning
+  </select>
+	
+</mapper>

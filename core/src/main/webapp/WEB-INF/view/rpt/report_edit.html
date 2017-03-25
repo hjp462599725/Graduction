@@ -1,0 +1,260 @@
+<#--
+ * description: 报表修改界面
+ * version: 1.0 
+ * author:chengye.hu@hand-china.com
+ * #{copyright}#
+ * 
+-->
+<#include "../include/head.html">
+<body style="padding: 10px;">
+    <form id="reportForm"></form>
+    <div id="reportGrid" style="margin: 0; padding: 0"></div>
+    <script type="text/javascript">
+    $(function() {
+    var _reportId="";
+    _reportId=${RequestParameters.reportId}; 
+    reportGridLoad(_reportId);
+    
+       var form = $("#reportForm").ligerForm({
+            fields : [ {
+                type : 'text',
+                label : '<@spring.message "hps.rpt.report.name"/>',
+                name : 'reportName',
+                validate: {
+                    required: true
+                }
+            }, {
+                type : 'checkbox',
+                label : '<@spring.message "hps.rpt.report.enabledflag"/>',
+                newline : false,
+                name : 'enabledFlag',
+                options : {
+                	checkValue :　'Y',
+                	uncheckValue : 'N'
+                },
+                validate: {
+                    required: true
+                }
+            }, {
+                type : 'text',
+                label : '<@spring.message "hps.rpt.report.code"/>',
+                newline : true,
+                name : 'reportCode',
+                validate: {
+                    required: true
+                }
+            }, {
+                type : 'text',
+                label : '<@spring.message "hps.rpt.report.discription"/>',
+                newline : false,
+                name : 'discription'
+            }, {
+                type : 'textarea',
+                label : '<@spring.message "hps.rpt.report.sql"/>',
+                newline : true,
+                width   : 350,
+                name : 'sql',
+                validate: {
+                    required: true
+                }
+            }, {
+                type : 'hidden',
+                name : 'reportId'
+            } ],
+            buttons : [ {             
+                    text    : '<@spring.message "hps.rpt.report.build"/>',
+                    disabled: false,
+                    rightWidth: 300,
+                    width   : 60,
+                    click   : function () {
+                        Hap.submitForm({
+                        form:form,                                                             
+                        url:'${base.contextPath}/rpt/report/create' ,
+                           success:function(json,opt){
+                                var initdata = json.rows[0];
+                                form.setData(initdata); 
+                                _reportId = form.getData().reportId;
+                                reportGridLoad(_reportId);    //初始化grid
+                            $.ligerDialog.success("<@spring.message "hap.tip.success"/>", '<@spring.message "hap.tip.info"/>', function(){                        
+                             });
+                             }
+                            });
+                    }
+                },{             
+                    text    : '<@spring.message "hps.rpt.report.generatereporttemplate"/>',
+                    disabled: false,
+                    width   : 100,
+                    click   : function () {
+                        saveGrid({
+                            grid: reportGrid,
+                            url: "${base.contextPath}/rpt/createFormwork"
+                        })
+                    }
+            	}, {             
+                    text    : '<@spring.message "hps.rpt.report.setreportparameters"/>',
+                    disabled: false,
+                    width   : 100,
+                    click   : function () {
+                    	$.ligerDialog
+						.open({
+							url : 'report_parameter.html?reportId='+form.getData().reportId,
+							title : '设置报表参数',
+							height : 500,
+							width : 700,
+							isResize : true
+						});
+                    	//window.location.href = 'hrp_report_parameter.html?reportId='+form.getData().reportId;
+                    }
+                }, {             
+                    text    : '<@spring.message "hps.rpt.report.uploadreporttemplate"/>',
+                    disabled: false,
+                    width   : 100,
+                    click   : function () {
+                    	$.ligerDialog
+						.open({
+							url : 'report_template_upload.html?reportId='+form.getData().reportId,
+							title : '上传模板文件',
+							height : 450,
+							width : 700,
+							isResize : true
+						});
+                    }
+                }, {             
+                    text    : '<@spring.message "hps.rpt.return"/>',
+                    disabled: false,
+                    width   : 80,
+                    click   : function () {
+                    	$.ligerDialog.confirm($l("<@spring.message 'hps.rpt.close_confirm'/>"), $l('hap.tip.info'),function(yes) {
+                    		if(yes){
+                    			parent.f_removeCurrentTab();
+                    		}else{
+                    		
+                    		}
+                    	})
+                    }
+                } ]
+        });
+        
+        
+        Hap.loadForm({form:form,url:'${base.contextPath}/rpt/report/query',para:{reportId:${RequestParameters.reportId}}})
+    	
+        
+       
+    });
+    var saveGrid = function(options){
+	  var grid = options.grid;
+	  var rows = $("#reportGrid").ligerGetGridManager().rows;
+	  if(rows.length==0 || grid.conn) return;
+	  grid.conn = $.ajax({
+	      url : options.url || '',
+	      type : "POST",
+	      dataType : "json",
+	      contentType : "application/json",
+	      data : JSON2.stringify(rows),
+	      success : function(json) {
+	          $.ligerDialog.success("创建模板成功", $l("hap.tip.info"));
+	          grid.conn = null;
+	      },
+	      error : function() {
+	          grid.conn = null;
+	          $.ligerDialog.closeWaitting();
+	      }
+  		});
+	}
+	//加载grid
+	var reportGridLoad = function(_reportId){
+        var reportGrid = $("#reportGrid").ligerGrid({
+            unSetValidateAttr : false,
+            columns : [ {
+                display : '<@spring.message "hps.rpt.column.sqlcolname"/>',
+                name : 'sqlcolName',
+                align : 'center',
+                width : '15%',
+                validate: {
+                    required: true
+                }
+            }, {
+                display : '<@spring.message "hps.rpt.column.sqlcolname.datatype"/>',
+                name : 'dataType',
+                align : 'center',
+                width : '13%',
+                validate: {
+                    required: true
+                }
+            }, {
+                display : '<@spring.message "hps.rpt.column.displayname"/>',
+                name : 'displayName',
+                align : 'center',
+                width : '15%',
+                editor : {
+                    type : 'text'
+                },
+                validate: {
+                    required: true
+                }
+            }, {
+                display : '<@spring.message "hps.rpt.column.scale"/>',
+                name : 'scale',
+                align : 'center',
+                width : '9%',
+                editor : {
+                    type : 'int'
+                }
+            }, {
+                display : '<@spring.message "hps.rpt.column.precision"/>',
+                name : 'precision',
+                align : 'center',
+                width : '9%',
+                editor : {
+                    type : 'int'
+                }
+            }, {
+                display : '<@spring.message "hps.rpt.column.dateformat"/>',
+                name : 'dateFormat',
+                align : 'center',
+                width : '15%',
+                editor : {
+                    type : 'text'
+                }
+            }, {
+                display : '<@spring.message "hps.rpt.column.timeformat"/>',
+                name : 'timeFormat',
+                align : 'center',
+                width : '15%',
+                editor : {
+                    type : 'text'
+                }
+            }, {
+                display : '<@spring.message "hps.rpt.column.showflag"/>',
+                name : 'showFlag',
+                width : '8%',
+                render : Hap.createGridCheckBoxRender(),
+                validate: {
+                    required: true
+                }
+            }],
+            url : '${base.contextPath}/rpt/reportColum/query?reportId='+_reportId,
+            toolbar : {
+                items : [ {
+                    text : '<@spring.message "hap.save"/>',
+                    click : function() {
+                        Hap.gridSave({
+                            grid : reportGrid,
+                            url : '${base.contextPath}/rpt/report_col/submit'
+                        })
+                    },
+                    icon : 'save'
+                }, {
+                    line: true
+                } ]
+            },
+            enabledEdit : true,
+            width : '99%',
+            height : '98%',
+            checkbox : true
+        });
+       };
+    
+    </script>
+</body>
+</html>

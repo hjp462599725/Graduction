@@ -1,0 +1,246 @@
+ <#include "../include/head.html"> 
+ <#include "../include/hps.html">
+
+<body style="padding: 3px; overflow: hidden;">
+	<form id="action_email_form"></form>
+	
+
+<script type="text/javascript">
+   $(function(){
+   		
+   		window["action_email_form"] = $("#action_email_form").ligerForm({
+   			 fields     : [{
+                 type    : 'hidden',
+                 name    : 'actionDtlId'
+             },{
+                type    : 'text',
+                label   : '预警活动名称',
+                name    : 'actionName',
+                labelWidth   : 120,
+                options:{
+                	disabled:true
+                }
+            
+            },{
+            	 type    : 'text',
+                 label   : '说明',
+                 name    : 'description',
+                 newline : false,
+                 options:{
+                 	disabled:true
+                 }
+            },{
+            	 type    : 'text',
+                 label   : '预警消息通知方式',
+                 name    : 'noticeTypeCodeMeaning',
+                 labelWidth   : 120,
+                 options:{
+                 	disabled:true
+                 }
+            },{
+                display: '发送邮件账户',
+                name   : 'mailConfigCode',
+                align  : 'center',
+                labelWidth   : 120,
+                editor : {
+                    type: 'text'
+                }
+            },{
+				display : '<@spring.message "hps.alt.recipient.listname"/>',
+				name : 'recipientListId',
+				align : 'left',
+				labelWidth   : 120,
+				textField : 'listName',
+				type : 'popup',
+				options : {
+						type : 'popup',
+						valueField : 'recipientListId',
+						textField : 'listName',
+						grid      : {
+                              columns: [{
+            	
+                    display: '<@spring.message "hps.alt.recipient.listname"/>',
+                    name   : 'listName',
+                    align  : 'center',
+                    width  : 100,
+                    type   : 'text'
+		            },{
+		                display: '<@spring.message "hps.alt.recipient.description"/>',
+		                name   : 'listDescription',
+		                align  : 'center',
+		                width  : 100,
+		                type: 'text'
+		            }],
+                        url    : '${base.contextPath}/alt/recipient/query',
+	                    height : 350
+                    },
+										 condition : {
+                            inputWidth: 150,
+                            labelWidth: 80,
+                            fields    : [{
+                                display: '<@spring.message "hps.alt.recipient.listname"/>',
+                                name   : "listName",
+                                newline: true,
+                                type   : "text"
+                            }, {
+                                display: '<@spring.message "hps.alt.recipient.description"/>',
+                                name   : "listDescription",
+                                newline: false,
+                                type   : "text"
+                            }]
+                        }
+						},
+					validate : {
+						required : true
+					}
+									
+            },{
+				display : '<@spring.message "hps.org.employee.name"/>',
+				name : 'recEmployeeId',
+				align : 'left',
+				newline: false,
+				valueField : 'employeeId',
+				textField : 'employeeName',
+				type : 'popup',
+				options : {
+					onLoadData:function(){
+						//设置参数
+			            this.setParm('recipientListId', $.ligerui.get('recipientListId').getValue());
+					},
+					onSelected  :function(obj) {
+                    	var o=obj.data[0]; //可以得到lov中选择的一行的所有数据					
+                    	$.ligerui.get("recipient").setValue(o.email);
+                    },
+					type : 'popup',
+					valueField : 'employeeId',
+					textField : 'employeeName',
+					grid      : {
+                              columns: [{
+            	
+                    display: '<@spring.message "hps.org.employee.name"/>',
+                    name   : 'employeeName',
+                    align  : 'center',
+                    width  : 100,
+                    type   : 'text'
+		            },
+		            {
+		                display: '<@spring.message "hps.org.employee.code"/>',
+		                name   : 'employeeNumber',
+		                align  : 'center',
+		                width  : 100,
+		                type: 'text'
+		            },{
+		            	 display: '<@spring.message "hps.org.employee.mobilephone"/>',
+		                 name   : 'mobilePhone',
+		                 align  : 'center',
+		                 width  : 100,
+		                 type   : 'text'
+		            },{
+		            	 display: '<@spring.message "hps.org.employee.email"/>',
+		                 name   : 'email',
+		                 align  : 'center',
+		                 width  : 100,
+		                 type: 'text'
+		            }],
+                        url    : '${base.contextPath}/alt/recipient/detail/query',
+	                    height : 350,
+	                    
+
+                    },
+									 condition : {
+                            inputWidth: 150,
+                            labelWidth: 70,
+                            fields    : [{
+                                display: '<@spring.message "hps.org.employee.name"/>',
+                                name   : "employeeName",
+                                newline: true,
+                                type   : "text"
+                            }, {
+                                display: '<@spring.message "hps.org.employee.code"/>',
+                                name   : "employeeNumber",
+                                newline: false,
+                                type   : "text"
+                            }]
+                        }
+						},
+					validate : {
+						required : true
+					}
+									
+            },{
+            	 display: '收件人',
+                 name   : 'recipient',
+                 align  : 'center',
+                 labelWidth : 120,
+                  width : 400,
+                 editor : {
+                     type: 'text'
+                 }
+            }, {
+            	 display: '主题',
+                 name   : 'subject',
+                 align  : 'center',
+                 labelWidth : 120,
+                  width : 400,
+                 editor : {
+                     type: 'text'
+                 }
+            },{
+            	
+            	 display: '抄送',
+                 name   : 'carbonCopy',
+                 align  : 'center',
+                 labelWidth : 120,
+                 width : 400,
+                 editor : {
+                     type: 'text'
+                 }
+            },{
+            	 display: '密送',
+                 name   : 'blindCarbonCopy',
+                 align  : 'center',
+                 labelWidth : 120,
+                  width : 400,
+                 editor : {
+                     type: 'text'
+                 }
+            },{
+            	 display: '预警消息',
+                 name   : 'alertMessage',
+                 type: 'textarea',
+                 labelWidth : 120,
+                 align  : 'center',
+                 width  : 400,
+                 height : 100
+               
+            }],
+             buttons    : [
+             {
+                text : '<@spring.message "hap.save"/>',
+                    click: function () {
+                    	Hap.submitForm({
+			                form:action_email_form,
+			                url:'${base.contextPath}/alt/alert/actionDtl/save?alertId=${RequestParameters.alertId}&actionId=${RequestParameters.actionId}',
+			                success:function(json,opt){
+			                    $.ligerDialog.success("<@spring.message "hap.tip.success"/>", '<@spring.message "hap.tip.info"/>', function(){
+			                    	
+			                    });
+			                    
+			                }
+			            });
+                    }
+            },{
+                text : '收件人列表',
+                width   : 60,
+               	click: function(){
+	          		window.location.href='recipient_list.html';
+				}
+            }]
+   		});
+   		Hap.loadForm({form:action_email_form,url:'${base.contextPath}/alt/alert/actionDtl/query',para:{noticeTypeCode:'${RequestParameters.noticeTypeCode}',actionId:${RequestParameters.actionId},alertId:${RequestParameters.alertId}}})
+   	
+   });
+
+</script>
+</body>
+</html>

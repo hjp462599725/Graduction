@@ -1,0 +1,71 @@
+<#-- * description: 快捷功能选择界面 * version: 1.0 *
+author:hongan.dong@hand-china.com * #{copyright}# * --> <#include
+"../include/head.html"> <#include "../include/hps.html">
+<html>
+<body style="padding: 10px; overflow: hidden;">
+	<div id="shortcutFunctionGrid"></div>
+	<script type="text/javascript">
+		var functionData = [];
+		var functionCode = null;
+		var functionName = null;
+		var resourceId = null;
+		var url = null;
+		var functionIcon = null;
+		$(function() {
+			$.ajax({
+				type : "POST",
+				data : {},
+				url : '${base.contextPath}/fnd/roleFunction/query',
+				cache : false,
+				dataType : 'json',
+				async : false,
+				success : function(data) {
+					functionData = data.rows;
+				},
+				error : function() {
+					console.log('error!');
+				}
+			})
+		});
+		$(function() {
+			var shortcutFunctionGrid = window['shortcutFunctionGrid'] = $(
+					"#shortcutFunctionGrid").ligerGrid({
+				unSetValidateAttr : false,
+				columns : [ {
+					display : '<@spring.message "function.functioncode"/>',
+					name : 'functionCode',
+					align : 'left',
+					width : 150,
+				}, {
+					display : '<@spring.message "function.functionname"/>',
+					name : 'functionName',
+					align : 'left',
+					width : 150,
+				}, {
+					display : 'URL',
+					name : 'url',
+					width : 180,
+					align : 'center'
+				} ],
+				data : {
+					rows : functionData
+				},
+				enabledEdit : true,
+				width : '100%',
+				height : '100%',
+				checkbox : false,
+				rownumbers : true,
+				usePage : true,
+				pageSize : 10,
+				onSelectRow : function(rowdata, rowindex, rowobj) {
+					functionCode = rowdata.functionCode;
+					functionName = rowdata.functionName;
+					resourceId = rowdata.resourceId;
+					url = rowdata.url;
+					functionIcon = rowdata.functionIcon;
+				}
+			});
+		});
+	</script>
+</body>
+</html>

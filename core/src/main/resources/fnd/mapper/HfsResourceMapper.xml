@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="hps.fnd.mapper.HpsResourceMapper">
+
+	<resultMap type="hps.fnd.dto.HpsResource" id="BaseResultMap">
+		<id column="Hfr_Fnd_ResourceId" property="fndResourceId" jdbcType="DECIMAL" />
+		<id column="Hfr_ResourceId" property="resourceId" jdbcType="DECIMAL" />
+		<result column="Sr_ResourceName" property="resourceName" jdbcType="VARCHAR" />
+		<result column="Hfr_EnabledFlag" property="enabledFlag" jdbcType="VARCHAR" />
+		<result column="Sr_Url" property="resourceUrl" jdbcType="VARCHAR" />
+		<result column="Hfr_Comments" property="comments" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<select id="selectResource" resultMap="BaseResultMap" parameterType="hps.fnd.dto.HpsResource">
+	
+		select hfr.fnd_resource_id as Hfr_Fnd_ResourceId,
+			   hfr.resource_id  as Hfr_ResourceId,
+		       hfr.enabled_flag as Hfr_EnabledFlag,
+		       hfr.comments     as Hfr_Comments,
+		       sr.url           as Sr_Url,
+		       sr.name   as Sr_ResourceName
+		  from hps_fnd_resource hfr, sys_resource_b sr
+		 where hfr.resource_id = sr.resource_id
+		
+ 		 <if test="fndResourceId != null">
+		 	and hfr.fnd_resource_id = #{fndResourceId,jdbcType=DECIMAL}
+		 </if>
+		 <if test="resourceUrl != null">
+		 	and sr.url like #{resourceUrl,jdbcType=VARCHAR}
+		 </if>
+		 <if test="comments != null">
+		 	and hfr.comments like #{comments,jdbcType=VARCHAR}
+		 </if>
+
+	</select>
+	
+	<!-- 查询某资源启用标识  by donghongan at 2016年8月03日 16:03:44 -->
+	<select id="selectEnabledFlag" resultMap="BaseResultMap" parameterType="hps.fnd.dto.HpsResource">
+	
+	    SELECT hfr.fnd_resource_id AS Hfr_Fnd_ResourceId
+	          ,hfr.resource_id     AS Hfr_ResourceId
+	          ,hfr.enabled_flag    AS Hfr_EnabledFlag
+	          ,hfr.comments        AS Hfr_Comments
+	    FROM   hps_fnd_resource hfr
+	    WHERE  hfr.resource_id = #{resourceId,jdbcType=DECIMAL}
+
+	</select>
+</mapper>

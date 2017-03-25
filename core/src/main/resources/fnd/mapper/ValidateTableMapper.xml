@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="hps.fnd.mapper.ValidateTableMapper">
+	<select id="columnFlagCount" resultType="Integer">
+		SELECT COUNT(0)
+		FROM hps_fnd_validate_table_b
+		WHERE ${conditions}
+	</select>
+	<resultMap id="baseResult" type="hps.fnd.dto.ValidateTable">
+		<id column="validate_table_id" property="validateTableId" jdbcType="DECIMAL"/>
+		<result column="flex_value_set_id" property="flexValueSetId" jdbcType="DECIMAL"/>
+		<result column="column_name" property="columnName" jdbcType="VARCHAR"/>
+		<result column="column_flag" property="columnFlag" jdbcType="VARCHAR"/>
+		<result column="condition_flag" property="conditionFlag" jdbcType="VARCHAR"/>
+		<result column="description" property="description" jdbcType="VARCHAR"/>
+		<result column="width" property="width" jdbcType="DECIMAL"/>
+		<result column="value_field" property="valueField" jdbcType="VARCHAR"/>
+		<result column="text_field" property="textField" jdbcType="VARCHAR"/>
+		<result column="hidden_flag" property="hiddenFlag" jdbcType="VARCHAR"/>
+		<result column="algin" property="algin" jdbcType="VARCHAR"/>
+		<result column="enabled_flag" property="enabledFlag" jdbcType="VARCHAR"/>
+		<result column="column_alias" property="columnAlias" jdbcType="VARCHAR"/>
+		<result column="object_version_number" property="objectVersionNumber" jdbcType="DECIMAL"/>
+	</resultMap>
+	
+	<select id="selectByIdAndLoacle" resultMap="baseResult">
+		select t.flex_value_set_id,
+		       t.column_name,
+		       tl.description,
+		       t.value_field,
+		       t.text_field,
+		       t.column_alias,
+		       t.hidden_flag,
+		       t.algin,
+		       t.enabled_flag,
+		       t.column_flag,
+		       t.condition_flag,
+		       t.width
+		  from HpS_FND_VALIDATe_TABLE_B t 
+     left join hps_fnd_validate_table_tl tl
+            on (tl.validate_table_id = t.validate_table_id and tl.lang = #{locale,jdbcType=VARCHAR})
+		 where t.flex_value_set_id = #{validateTable.flexValueSetId,jdbcType=DECIMAL}
+		   and t.enabled_flag = 'Y'
+	</select>
+	
+	<update id='updateValidateTableById' parameterType="hps.fnd.dto.ValidateTable">
+			update HpS_FND_VALIDATe_TABLE_B
+			   set flex_value_set_id = #{flexValueSetId,jdbcType=DECIMAL},
+			       column_name = #{columnName,jdbcType=VARCHAR},
+			       description = #{description,jdbcType=VARCHAR},
+			       value_field = #{valueField,jdbcType=VARCHAR},
+			       text_field = #{textField,jdbcType=VARCHAR},
+			       hidden_flag = #{hiddenFlag,jdbcType=VARCHAR},
+			       algin = #{algin,jdbcType=VARCHAR},
+			       column_alias = #{columnAlias ,jdbcType=VARCHAR},
+			       enabled_flag = #{enabledFlag,jdbcType=VARCHAR},
+			       object_version_number = object_version_number+1,
+			       last_updated_by = #{lastUpdatedBy,jdbcType=DECIMAL},
+			       last_update_date = #{lastUpdateDate,jdbcType=DATE},
+			       last_update_login = #{lastUpdateLogin,jdbcType=DECIMAL},
+			       program_id = #{programId,jdbcType=DECIMAL},
+			       request_id = #{requestId,jdbcType=DECIMAL},
+			       attribute_category = #{attributeCategory,jdbcType=VARCHAR},
+			       attribute1 = #{attribute1,jdbcType=VARCHAR},
+			       attribute2 = #{attribute2,jdbcType=VARCHAR},
+			       attribute3 = #{attribute3,jdbcType=VARCHAR},
+			       attribute4 = #{attribute4,jdbcType=VARCHAR},
+			       attribute5 = #{attribute5,jdbcType=VARCHAR},
+			       attribute6 = #{attribute6,jdbcType=VARCHAR},
+			       attribute7 = #{attribute7,jdbcType=VARCHAR},
+			       attribute8 = #{attribute8,jdbcType=VARCHAR},
+			       attribute9 = #{attribute9,jdbcType=VARCHAR},
+			       attribute10 = #{attribute10,jdbcType=VARCHAR},
+			       attribute11 = #{attribute11,jdbcType=VARCHAR},
+			       attribute12 = #{attribute12,jdbcType=VARCHAR},
+			       attribute13 = #{attribute13,jdbcType=VARCHAR},
+			       attribute14 = #{attribute14,jdbcType=VARCHAR},
+			       attribute15 = #{attribute15,jdbcType=VARCHAR},
+			       column_flag = #{columnFlag,jdbcType=VARCHAR},
+			       condition_flag = #{conditionFlag,jdbcType=VARCHAR},
+			       width = #{width,jdbcType=DECIMAL}
+			 where validate_table_id = #{validateTableId,jdbcType=DECIMAL}				
+	</update>
+</mapper>

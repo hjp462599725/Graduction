@@ -1,0 +1,244 @@
+<#--
+ * description:echart simple example界面
+ * version: 1.0 
+ * author:hao.wen@hand-china.com
+ * #{copyright}#
+ * 
+-->
+<#include "../include/head.html">
+<#include "../include/hps.html">
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ECharts</title>
+</head>
+<body>
+    <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+    <div id="main" style="width: 1000px;height:500px;"></div>
+    <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('main'));
+        
+        var max=0;
+        // 指定图表的配置项和数据
+        //柱状图
+          var option = {
+            title: {
+                text: 'ECharts 柱状图',
+                //x:'center'
+            },
+            tooltip: {},
+            legend: {
+                data:['功能数量']
+            },
+            calculable : true,
+/*               markLine : {
+                data : [
+                    {type : 'average', name: '平均值'}
+                ]
+            
+        },  */ 
+            toolbox: {
+                show : true,
+                feature : {
+                    mark : {show: true},
+                    dataView : {show: true, readOnly: false},
+                    magicType : {show: true, type: ['line', 'bar']},
+                    restore : {show: true},
+                    saveAsImage : {show: true}
+                }
+            },
+             xAxis: {
+                   axisLabel:{
+                    interval:0,
+                  //rotate:45,
+                  rotate:0,
+                  margin:2,
+                   textStyle:{
+                      color:"#222"
+                  }  
+              },   
+                 //data: ["衬衫","羊毛衫","雪纺衫","裤子","高跟鞋","袜子"] 
+               data: (function(){
+                    var arr=[];
+                    $.ajax({
+                    type : "post",
+                    async : false, //同步执行
+                    url : "${base.contextPath}/echart/histogram",
+                    data : {},
+                    dataType : "json", //返回数据形式为json
+                    success : function(json) {
+                      if (json) {
+                      for(var i=0;i<json.rows.length;i++){
+                    	 //alert(json.rows[i].functionName);
+                        arr.push(json.rows[i].functionName);
+                    }   
+                    }                                    
+                    },
+                    error : function(errorMsg) {
+                     alert("不好意思,图表请求数据失败啦!");
+                        myChart.hideLoading();
+                    }
+                    })
+                       return arr;
+                  })()    
+            },
+             yAxis:{
+            	
+            }, 
+            series: [{
+                name: '功能数量',
+                type: 'bar',
+                barWidth:20,
+                //data:[5,20,36,10,10,20]
+                   'data':(function(){
+                    var arr=[];
+                        $.ajax({
+                        type : "post",
+                        async : false, //同步执行
+                        url : "${base.contextPath}/echart/histogram",
+                        data : {},
+                        dataType : "json", //返回数据形式为json
+                        success : function(json) {
+                        if (json) {
+                               for(var i=0;i<json.rows.length;i++){
+                            	   //alert("ok3");
+                              	 //alert(json.rows[i].saleVolume);
+                              	 max=max+json.rows[i].fnCount;
+                                 arr.push(json.rows[i].fnCount);
+                                }    
+                        }                                       
+                    },
+                    error : function(errorMsg) {
+                        alert("不好意思,图表请求数据失败啦!");
+                        myChart.hideLoading();
+                    }
+                   })
+                   return arr;
+                })()      
+            }]
+        }; 
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+    </script>
+    <div id="main0" style="width: 1000px;height:50px;"></div>
+    
+    <div id="main1" style="width: 1000px;height:500px;"></div>
+        <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('main1'));
+        // 指定图表的配置项和数据
+        //饼图
+        var option={
+            title: {
+                 text: 'ECharts 饼状图',
+                 x:'center'
+            },	
+            tooltip : {
+                trigger: 'item',
+                formatter: "{a} <br/>{b} : {c} ({d}%)"
+            },
+            legend: {
+                orient : 'vertical',
+                x : 'left',
+                data: (function(){
+                    var arr=[];
+                    $.ajax({
+                    type : "post",
+                    async : false, //同步执行
+                    url : "${base.contextPath}/echart/histogram",
+                    data : {},
+                    dataType : "json", //返回数据形式为json
+                    success : function(json) {
+                      if (json) {
+                      for(var i=0;i<json.rows.length;i++){
+                    	 //alert(json.rows[i].functionName);
+                        arr.push(json.rows[i].functionName);
+                    }   
+                    }                                    
+                    },
+                    error : function(errorMsg) {
+                     alert("不好意思,图表请求数据失败啦!");
+                        myChart.hideLoading();
+                    }
+                    })
+                       return arr;
+                  })() 
+            },
+            toolbox: {
+                show : true,
+                feature : {
+                    mark : {show: true},
+                    dataView : {show: true, readOnly: false},
+                    magicType : {
+                        show: true, 
+                        type: ['pie', 'funnel'],
+                        option: {
+                            funnel: {
+                                x: '25%',
+                                width: '50%',
+                                funnelAlign: 'left',
+                                max: max
+                            }
+                        }
+                    },
+                    restore : {show: true},
+                    saveAsImage : {show: true}
+                }
+            },
+            calculable : true,
+            series : [
+                {
+                    name: '功能数量',
+                    type: 'pie',
+                    radius: '55%',
+                    //roseType: 'angle',
+/*                         data:[
+                        {value:400, name:'搜索引擎'},
+                        {value:335, name:'直接访问'},
+                        {value:310, name:'邮件营销'},
+                        {value:274, name:'联盟广告'},
+                        {value:235, name:'视频广告'},
+                        {value:null, name:'null'},
+                    ]  */   
+                    
+                        'data':(function(){
+                        var arr=[];
+                            $.ajax({
+                            type : "post",
+                            async : false, //同步执行
+                            url : "${base.contextPath}/echart/histogram",
+                            data : {},
+                            dataType : "json", //返回数据形式为json
+                            success : function(json) {
+                            if (json) {
+                                   for(var i=0;i<json.rows.length;i++){
+                                	   
+                                	   arr.push({
+                                           name: json.rows[i].functionName,
+                                           value: json.rows[i].fnCount
+                                           });
+                                	   //alert("ok3");
+                                  	 //alert(json.rows[i].ename,json.rows[i].evalue);
+                                     //arr.push("{value:"+json.rows[i].evalue+", name:'"+json.rows[i].ename+"'}");                                
+                                    }    
+                            }                                       
+                        },
+                        error : function(errorMsg) {
+                            alert("不好意思,图表请求数据失败啦!");
+                            myChart.hideLoading();
+                        }
+                       })
+                       return arr;
+                    })()         
+                }]
+        };
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+    </script>
+           
+    
+</body>
+</html>

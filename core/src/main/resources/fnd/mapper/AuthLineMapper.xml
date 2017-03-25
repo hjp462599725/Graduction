@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="hps.fnd.mapper.AuthLineMapper">
+
+	<resultMap type="hps.fnd.dto.AuthLine" id="BaseResultMap">
+		<id column="AUTH_LINE_ID" property="authLineId" jdbcType="DECIMAL" />
+		<result column="AUTH_HEADER_ID" property="authHeaderId" jdbcType="DECIMAL" />
+		<result column="RESOURCE_ITEM_ID" property="resourceItemId" jdbcType="DECIMAL" />
+		<result column="IS_READ" property="isRead" jdbcType="VARCHAR" />
+		<result column="IS_EDIT" property="isEdit" jdbcType="VARCHAR" />
+		<result column="IS_HIDE" property="isHide" jdbcType="VARCHAR" />
+		<result column="IS_REQUIRED" property="isRequired" jdbcType="VARCHAR" />
+		<result column="IS_OPERATE" property="isOperate" jdbcType="VARCHAR" />
+		<result column="OBJECT_VERSION_NUMBER" property="objectVersionNumber" jdbcType="DECIMAL" />
+		<result column="ITEM_CODE" property="itemCode" jdbcType="VARCHAR" />
+		<result column="ITEM_DESCRIPTION" property="itemDescription" jdbcType="VARCHAR" />
+		<result column="RESOURCE_ID" property="resourceId" jdbcType="DECIMAL" />
+		<result column="ROLE_ID" property="roleId" jdbcType="DECIMAL" />
+		<result column="ITEM_REGION" property="itemRegion" jdbcType="VARCHAR" />
+		<result column="ITEM_TYPE" property="itemType" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<select id="selectAuthLine" resultMap="BaseResultMap" parameterType="hps.fnd.dto.AuthLine">
+		SELECT hfal.auth_line_id
+		      ,hfal.auth_header_id
+		      ,hfal.resource_item_id
+		      ,hfal.object_version_number
+		FROM   hps_fnd_auth_line hfal
+		WHERE 1=1
+		<if test="authHeaderId != null">
+		AND  hfal.auth_header_id = #{authHeaderId, jdbcType=DECIMAL}
+		</if>
+		<if test="resourceItemId != null">
+		AND  hfal.resource_item_id = #{resourceItemId, jdbcType=DECIMAL}
+		</if>
+	</select>
+	
+	<select id="selectAuthLines" resultMap="BaseResultMap"
+		parameterType="hps.fnd.dto.AuthHeader">
+		SELECT hfah.role_id
+		      ,hfah.resource_id
+		      ,hfal.auth_line_id
+		      ,hfal.auth_header_id
+		      ,hfal.resource_item_id
+		      ,nvl(hfal.is_read, 'Y') as is_read
+		      ,nvl(hfal.is_edit, 'N') as is_edit
+		      ,nvl(hfal.is_hide, 'N') as is_hide
+		      ,nvl(hfal.is_required, 'N') as is_required
+		      ,nvl(hfal.is_operate, 'N') as is_operate
+		      ,hfri.item_code
+		      ,hfri.item_description
+		      ,hfri.item_region
+		      ,hfri.item_type
+		      ,hfal.object_version_number
+		FROM   hps_fnd_auth_line    hfal
+		      ,hps_fnd_auth_header  hfah
+		      ,hps_fnd_resource_item hfri
+		      ,hps_fnd_resource      hfr
+		WHERE  hfal.resource_item_id = hfri.resource_item_id
+		AND    hfal.auth_header_id = hfah.auth_header_id
+		AND    hfal.auth_header_id = #{authHeaderId, jdbcType=DECIMAL}
+		AND    hfr.fnd_resource_id = hfri.fnd_resource_id
+		AND    hfr.resource_id = #{resourceId, jdbcType=DECIMAL}
+		ORDER  BY hfri.item_region
+		         ,hfri.item_type
+	</select>
+	
+	<insert id="insertAuthLines" parameterType="hps.fnd.dto.AuthLine">
+		<selectKey resultType="Long" keyProperty="authLineId"
+	        order="BEFORE">
+          SELECT hps_fnd_auth_line_s.nextval
+          FROM   dual
+	    </selectKey>
+	    INSERT INTO hps_fnd_auth_line
+	    <trim prefix="(" suffix=")" suffixOverrides=",">
+			auth_line_id
+			,auth_header_id
+			,resource_item_id
+			,is_read
+			,is_edit
+			,is_hide
+	        ,is_required
+	        ,is_operate
+	        ,
+			<if test="objectVersionNumber != null">OBJECT_VERSION_NUMBER,</if>
+			<if test="createdBy != null" > CREATED_BY,</if>
+      		<if test="creationDate != null" >CREATION_DATE,</if>
+      		<if test="lastUpdatedBy != null" >LAST_UPDATED_BY,</if>
+      		<if test="lastUpdateDate != null" >LAST_UPDATE_DATE,</if>
+      		<if test="lastUpdateLogin != null" >LAST_UPDATE_LOGIN,</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			#{authLineId,jdbcType=DECIMAL}
+			,#{authHeaderId,jdbcType=DECIMAL}
+			,#{resourceItemId,jdbcType=DECIMAL}
+			,
+			<if test="isRead != null">#{isRead,jdbcType=VARCHAR},</if>
+	        <if test="isEdit != null">#{isEdit,jdbcType=VARCHAR},</if>
+	        <if test="isHide != null">#{isHide,jdbcType=VARCHAR},</if>
+	        <if test="isRequired != null">#{isRequired,jdbcType=VARCHAR},</if>
+	        <if test="isOperate != null">#{isOperate,jdbcType=VARCHAR},</if>
+			<if test="objectVersionNumber != null">#{objectVersionNumber,javaType=java.lang.Long},</if>
+			<if test="createdBy != null">#{request.userId,javaType=java.lang.Long},</if>
+			<if test="creationDate != null">#{creationDate,javaType=java.util.Date},</if>
+			<if test="lastUpdatedBy != null">#{lastUpdatedBy,javaType=java.lang.Long},</if>
+			<if test="lastUpdateDate != null">#{lastUpdateDate,javaType=java.util.Date},</if>
+			<if test="lastUpdateLogin != null">#{request.userId,javaType=java.lang.Long},</if>
+		</trim>
+    </insert>
+	
+	<update id="updateAuthLines">
+        UPDATE hps_fnd_auth_line hfal
+        SET	   hfal.resource_item_id = #{resourceItemId,jdbcType=DECIMAL}
+        <if test="isRead != null">
+        ,hfal.is_read = #{isRead,jdbcType=VARCHAR}
+        </if>
+        <if test="isEdit != null">
+        ,hfal.is_edit = #{isEdit,jdbcType=VARCHAR}
+        </if>
+        <if test="isHide != null">
+        ,hfal.is_hide = #{isHide,jdbcType=VARCHAR}
+        </if>
+        <if test="isRequired != null">
+        ,hfal.is_required = #{isRequired,jdbcType=VARCHAR}
+        </if>
+        <if test="isOperate != null">
+        ,hfal.is_operate = #{isOperate,jdbcType=VARCHAR}
+        </if>
+        <if test="objectVersionNumber != null">
+		,hfal.OBJECT_VERSION_NUMBER = #{objectVersionNumber,javaType=java.lang.Long}+1
+		</if>
+		<if test="lastUpdatedBy != null">
+		,hfal.LAST_UPDATED_BY = #{lastUpdatedBy,javaType=java.lang.Long}
+		</if>
+		<if test="lastUpdateDate != null">
+		,hfal.LAST_UPDATE_DATE = SYSDATE
+		</if>
+		<if test="lastUpdateLogin != null">
+		,hfal.LAST_UPDATE_LOGIN = #{lastUpdateLogin,javaType=java.lang.Long}
+		</if>
+        WHERE  hfal.auth_line_id = #{authLineId,jdbcType=DECIMAL}
+    </update>
+    
+    <delete id="deleteAuthLines" parameterType="hps.fnd.dto.AuthLine">
+		DELETE FROM hps_fnd_auth_line hfal
+		WHERE  hfal.auth_line_id = #{authLineId,jdbcType=DECIMAL}
+	</delete>
+    
+    <select id="redisInitLines" resultMap="BaseResultMap" parameterType="java.lang.Long">
+		SELECT hfah.role_id
+		      ,hfah.resource_id
+		      ,hfal.auth_line_id
+		      ,hfal.auth_header_id
+		      ,hfal.resource_item_id
+		      ,hfal.is_read
+		      ,hfal.is_edit
+		      ,hfal.is_hide
+		      ,hfal.is_required
+		      ,hfal.is_operate
+		      ,hfri.item_code
+		      ,hfri.item_description
+		      ,hfri.item_region
+		      ,hfri.item_type
+		      ,hfal.object_version_number
+		FROM   hps_fnd_auth_line    hfal
+		      ,hps_fnd_resource_item hfri
+		      ,hps_fnd_auth_header  hfah
+		WHERE  hfal.resource_item_id = hfri.resource_item_id
+		AND    hfal.auth_header_id = hfah.auth_header_id
+		AND    hfah.auth_header_id = #{authHeaderId}
+	</select>
+	
+	<select id="selectAuthList" resultMap="BaseResultMap" parameterType="hps.fnd.dto.AuthLine">
+		SELECT hfah.role_id
+		      ,hfah.resource_id
+		      ,hfri.item_code
+		      ,hfri.item_region
+		      ,hfri.item_type
+		FROM   hps_fnd_auth_line    hfal
+		      ,hps_fnd_auth_header  hfah
+		      ,hps_fnd_resource_item hfri
+		WHERE  hfal.auth_header_id = hfah.auth_header_id
+		AND    hfah.role_id = #{roleId,jdbcType=DECIMAL}
+		AND    hfah.resource_id = #{resourceId,jdbcType=DECIMAL}
+		AND    hfal.resource_item_id = hfri.resource_item_id
+	</select>
+    
+</mapper>

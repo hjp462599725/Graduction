@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="hps.fnd.mapper.HpsResourceItemMapper">
+
+	<resultMap type="hps.fnd.dto.HpsResourceItem" id="BaseResultMap">
+		<id column="fnd_resource_id" property="fndResourceId" jdbcType="DECIMAL" />
+		<id column="resource_item_id" property="resourceItemId" jdbcType="DECIMAL" />
+		<result column="item_code" property="itemCode" jdbcType="VARCHAR" />
+		<result column="item_region" property="itemRegion" jdbcType="VARCHAR" />
+		<result column="item_type" property="itemType" jdbcType="VARCHAR" />
+		<result column="item_description" property="itemDescription" jdbcType="VARCHAR" />
+		<result column="enabled_flag" property="enabledFlag" jdbcType="VARCHAR" />
+		<result column="start_date_active" property="startDateActive" jdbcType="TIMESTAMP" />
+		<result column="end_date_active" property="endDateActive" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<select id="selectHpsResourceItem" resultMap="BaseResultMap" parameterType="hps.fnd.dto.HpsResourceItem">
+	
+		select hfri.fnd_resource_id   as fnd_resource_id,
+			   hfri.resource_item_id  as resource_item_id,
+		       hfri.item_region         as item_region,
+		       hfri.item_type         as item_type,
+		       hfri.item_code         as item_code,
+		       hfri.item_description  as item_description,
+		       hfri.enabled_flag      as enabled_flag,
+		       hfri.start_date_active as start_date_active,
+		       hfri.end_date_active   as end_date_active
+		  from hps_fnd_resource_item hfri
+
+		<where>
+			<if test="fndResourceId != null">
+				and hfri.fnd_resource_id = #{fndResourceId,jdbcType=DECIMAL}
+			</if>
+		</where>
+
+
+	</select>
+	
+	<!-- 查询某资源下组件的启用标识  by donghongan at 2016年8月03日 16:03:44 -->
+	<select id="selectEnableFlag" resultMap="BaseResultMap">
+		SELECT hfri.resource_item_id
+		      ,hfri.fnd_resource_id
+		      ,hfri.item_code
+		      ,hfri.item_description
+		      ,hfri.enabled_flag
+		FROM   hps_fnd_resource_item hfri
+		      ,hps_fnd_resource      hfr
+		WHERE  hfri.fnd_resource_id = hfr.fnd_resource_id
+		AND    hfri.item_code = #{itemCode}
+		AND    hfr.resource_id = #{resourceId}
+		AND    hfri.item_region = #{itemRegion}
+		AND    (sysdate BETWEEN nvl(hfri.start_date_active, sysdate) 
+			   AND nvl(hfri.end_date_active, sysdate))
+	</select>
+	
+	<!-- 页面组件查询  by donghongan at 2016年8月30日 14:40:44 -->
+	<select id="selectItems" resultMap="BaseResultMap" parameterType="hps.fnd.dto.AuthLine">
+		SELECT hfri.resource_item_id
+		      ,hfri.item_code
+		      ,hfri.item_description
+		      ,hfri.item_type
+		      ,hfri.item_region
+		FROM   hps_fnd_resource_item hfri
+		      ,hps_fnd_resource      hfr
+		WHERE  hfri.fnd_resource_id = hfr.fnd_resource_id
+		AND    hfr.resource_id = #{resourceId,jdbcType=DECIMAL}
+		<if test="itemCode != null">
+		AND hfri.item_code like #{itemCode,jdbcType=VARCHAR}
+		</if>
+		<if test="itemDescription != null">
+		AND hfri.item_description like #{itemDescription,jdbcType=VARCHAR}
+		</if>
+		<if test="itemType != null">
+		AND hfri.item_type like #{itemType,jdbcType=VARCHAR}
+		</if>
+		<if test="itemRegion != null">
+		AND hfri.item_region like #{itemRegion,jdbcType=VARCHAR}
+		</if>
+		AND    hfri.item_code IS NOT NULL
+		AND    hfri.item_type IS NOT NULL
+		AND    nvl(hfri.item_type,' ') != 'hidden'
+		AND    hfri.enabled_flag = 'Y'
+		ORDER  BY hfri.item_region
+		         ,hfri.item_type
+	</select>
+</mapper>

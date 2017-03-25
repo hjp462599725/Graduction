@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="hps.org.mapper.EmployeeMapper">
+
+	<resultMap type="hps.org.dto.Employee" id="BaseResultMap"
+		extends="com.hand.hap.mapper.StdMapper.STD">
+		<id column="EMPLOYEE_ID" property="employeeId" jdbcType="DECIMAL" />
+		<result column="EMPLOYEE_NUMBER" property="employeeNumber"
+			jdbcType="VARCHAR" />
+		<result column="EMPLOYEE_NAME" property="employeeName"
+			jdbcType="VARCHAR" />
+		<result column="EMAIL" property="email" jdbcType="VARCHAR" />
+		<result column="MOBILE_PHONE" property="mobilePhone" jdbcType="VARCHAR" />
+		<result column="WECHAT" property="wechat" jdbcType="VARCHAR" />
+		<result column="QQ" property="qq" jdbcType="VARCHAR" />
+		<result column="CERTIFICATE" property="certificate" jdbcType="VARCHAR" />
+		<result column="BANK_NAME" property="bankName" jdbcType="VARCHAR" />
+		<result column="COMMENTS" property="comments" jdbcType="VARCHAR" />
+		<result column="BANK_ACCOUNT_NUM" property="bankAccountNum"
+			jdbcType="VARCHAR" />
+		<result column="ENABLED_FLAG" property="enabledFlag" jdbcType="VARCHAR" />
+		<result column="EMPLOYEE_TYPE_CODE" property="lookupCode"
+			jdbcType="VARCHAR" />
+			<result column="LANG" property="lang" jdbcType="VARCHAR"/>
+			
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		EMPLOYEE_ID,EMPLOYEE_NUMBER,EMPLOYEE_NAME,EMAIL,MOBILE_PHONE,WECHAT,QQ,CERTIFICATE
+		BANK_NAME,COMMENTS,BANK_ACCOUNT_NUM,ENABLED_FLAG,EMPLOYEE_TYPE_CODE,LANG
+	</sql>
+
+	<!-- 查询所有员工信息 -->
+	<select id="selectEmployees" parameterType="hps.org.dto.Employee" resultMap="BaseResultMap">
+		select heb.employee_id,
+		flv.meaning ,
+		heb.employee_type_code,
+		heb.employee_number,
+		heb.employee_name,
+		heb.email,
+		heb.mobile_phone,
+		heb.wechat,
+		heb.qq,
+		heb.certificate,
+		heb.comments,
+		heb.bank_name,
+		heb.bank_account_num,
+		heb.enabled_flag
+		from
+		HPS_ORG_EMPLOYEE_B heb,
+		hps_fnd_lookup_value_b flv
+		<where>
+			<if test="employeeName!=null">
+				heb.employee_name like #{employeeName,jdbcType=VARCHAR}
+			</if>
+			<if test="employeeNumber!=null">
+				and heb.employee_number like
+				#{employeeNumber,jdbcType=VARCHAR}
+			</if>
+			<if test="employeeId!=null">
+				and heb.employee_id =#{employeeId,jdbcType=DECIMAL}
+			</if>
+			and flv.lookup_type='HPS_ORG_EMPLOYEE_TYPE'
+			and flv.lookup_code = heb.employee_type_code
+		</where>
+	</select>
+
+	<!-- 根据id查询员工信息 -->
+	<select id="selectEmployeesById" resultMap="BaseResultMap"
+		parameterType="java.lang.Long">
+		select b.employee_id,b.employee_name from
+		HPS_ORG_EMPLOYEE_B b where
+		b.employee_id=#{employeeId,jdbcType=DECIMAL}
+	</select>
+
+	<!-- 新增员工信息 -->
+	<insert id="insertEmpl" parameterType="hps.org.dto.Employee">
+		<selectKey keyProperty="employeeId" order="BEFORE"
+			resultType="java.lang.Long">
+			select HPS_ORG_EMPLOYEE_B_s.Nextval from dual
+		</selectKey>
+
+		insert into HPS_ORG_EMPLOYEE_B
+		(employee_id,
+		EMPLOYEE_TYPE_CODE,
+		EMPLOYEE_NUMBER,
+		EMPLOYEE_NAME,
+		EMAIL,
+		MOBILE_PHONE,
+		WECHAT,
+		QQ,
+		CERTIFICATE,
+		COMMENTS,
+		BANK_NAME,
+		BANK_ACCOUNT_NUM,
+		ENABLED_FLAG,
+		CREATED_BY)
+		values(#{employeeId,jdbcType=DECIMAL},
+		#{lookupCode,jdbcType=VARCHAR},
+		#{employeeNumber,jdbcType=VARCHAR},
+		#{employeeName,jdbcType=VARCHAR},
+		#{email,jdbcType=VARCHAR},
+		#{mobilePhone,jdbcType=VARCHAR},
+		#{wechat,jdbcType=VARCHAR},
+		#{qq,jdbcType=VARCHAR},
+		#{certificate,jdbcType=VARCHAR},
+		#{comments,jdbcType=VARCHAR},
+		#{bankName,jdbcType=VARCHAR},
+		#{bankAccountNum,jdbcType=VARCHAR},
+		#{enabledFlag,jdbcType=VARCHAR},
+		#{request.userId,javaType=java.lang.Long})
+	</insert>
+
+	<!-- 修改员工信息  手动修改版本号信息-->
+	<update id="updateEmpl" parameterType="hps.org.dto.Employee">
+		update HPS_ORG_EMPLOYEE_B b
+		set
+		b.EMPLOYEE_TYPE_CODE = #{lookupCode,jdbcType=VARCHAR},
+		b.employee_number = #{employeeNumber,jdbcType=VARCHAR},
+		b.employee_name = #{employeeName,jdbcType=VARCHAR},
+		b.email = #{email,jdbcType=VARCHAR},
+		b.wechat = #{wechat,jdbcType=VARCHAR},
+		b.qq = #{qq,jdbcType=VARCHAR},
+		b.mobile_phone = #{mobilePhone,jdbcType=VARCHAR},
+		b.certificate = #{certificate,jdbcType=VARCHAR},
+		b.comments = #{comments,jdbcType=VARCHAR},
+		b.bank_name = #{bankName,jdbcType=VARCHAR},
+		b.bank_account_num = #{bankAccountNum,jdbcType=VARCHAR},
+		b.enabled_flag = #{enabledFlag,jdbcType=VARCHAR},
+
+		OBJECT_VERSION_NUMBER = OBJECT_VERSION_NUMBER + 1,
+		LAST_UPDATE_DATE = SYSDATE,
+		LAST_UPDATED_BY = #{lastUpdatedBy,javaType=java.lang.Long},
+		LAST_UPDATE_lOGIN = #{lastUpdateLogin,javaType=java.lang.Long}
+		where b.employee_id = #{employeeId,jdbcType=DECIMAL}
+	</update>
+
+	<!-- 清除员工信息 -->
+	<delete id="removeEmpl" parameterType="hps.org.dto.Employee">
+		delete from
+		HPS_ORG_EMPLOYEE_B b where b.employee_id=#{employeeId}
+	</delete>
+	
+	<!-- 刪除员工信息 -->
+	<delete id="deleteEmpl" parameterType="hps.org.dto.Employee">
+		delete from
+		HPS_ORG_EMPLOYEE_B b where b.employee_id=#{employeeId}
+	</delete>
+
+	<!--验证员工的代码的唯一性-->
+	<select id="selectEmployeesUnique" parameterType="hps.org.dto.Employee" resultType="java.lang.Long">
+		SELECT COUNT(0)
+  		FROM HPS_ORG_EMPLOYEE_B e
+		where e.employee_number = #{employeeNumber,jdbcType=VARCHAR}
+		and  e.enabled_flag='Y'
+
+		<if test="employeeId!=null">
+			and e.employee_id !=#{employeeId,jdbcType=DECIMAL}
+		</if>
+
+	</select>
+
+	<!--验证员工身份证的唯一性-->
+	<select id="selectEmployeesUniqueCertificate" parameterType="hps.org.dto.Employee" resultType="java.lang.Long">
+		SELECT COUNT(0)
+		FROM HPS_ORG_EMPLOYEE_B e
+		where e.certificate = #{certificate,jdbcType=VARCHAR}
+		and e.enabled_flag='Y'
+
+		<if test="employeeId!=null">
+			and e.employee_id !=#{employeeId,jdbcType=DECIMAL}
+		</if>
+	</select>
+
+</mapper>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="hps.rpt.mapper.ReportColumnMapper" >
+	<resultMap id="baseResult" type="hps.rpt.dto.ReportColumn" >
+		<id column="column_id" property="columnId" jdbcType="DECIMAL"/>
+		<result column="report_id" property="reportId" jdbcType="DECIMAL"/>
+		<result column="sqlcol_name" property="sqlcolName" jdbcType="VARCHAR"/>
+		<result column="display_name" property="displayName" jdbcType="VARCHAR"/>
+		<result column="data_type" property="dataType" jdbcType="VARCHAR"/>
+		<result column="precision" property="precision" jdbcType="DECIMAL"/>
+		<result column="scale" property="scale" jdbcType="DECIMAL"/>
+		<result column="date_format" property="dateFormat" jdbcType="VARCHAR"/>
+		<result column="time_format" property="timeFormat" jdbcType="VARCHAR"/>
+		<result column="show_flag" property="showFlag" jdbcType="VARCHAR"/>
+		<result column="object_version_number" property="objectVersionNumber" jdbcType="DECIMAL"/>
+		<result column="creation_date" property="creationDate" jdbcType="DATE"/>
+		<result column="created_by" property="createdBy" jdbcType="DECIMAL"/>
+		<result column="last_updated_by" property="lastUpdatedBy" jdbcType="DECIMAL"/>
+		<result column="last_update_date" property="lastUpdateDate" jdbcType="DATE"/>
+		<result column="last_update_login" property="lastUpdateLogin" jdbcType="DECIMAL"/>
+		<result column="attribute_category" property="attributeCategory" jdbcType="VARCHAR"/>
+		<result column="attribute1" property="attribute1" jdbcType="VARCHAR"/>
+		<result column="attribute2" property="attribute2" jdbcType="VARCHAR"/>
+		<result column="attribute3" property="attribute3" jdbcType="VARCHAR"/>
+		<result column="attribute4" property="attribute4" jdbcType="VARCHAR"/>
+		<result column="attribute5" property="attribute5" jdbcType="VARCHAR"/>
+		<result column="attribute6" property="attribute6" jdbcType="VARCHAR"/>
+		<result column="attribute7" property="attribute7" jdbcType="VARCHAR"/>
+		<result column="attribute8" property="attribute8" jdbcType="VARCHAR"/>
+		<result column="attribute9" property="attribute9" jdbcType="VARCHAR"/>
+		<result column="attribute10" property="attribute10" jdbcType="VARCHAR"/>
+		<result column="attribute11" property="attribute11" jdbcType="VARCHAR"/>
+		<result column="attribute12" property="attribute12" jdbcType="VARCHAR"/>
+		<result column="attribute13" property="attribute13" jdbcType="VARCHAR"/>
+		<result column="attribute14" property="attribute14" jdbcType="VARCHAR"/>
+		<result column="attribute15" property="attribute15" jdbcType="VARCHAR"/>
+
+	</resultMap>
+	
+	<delete id ="deleteByReportId" parameterType="hps.rpt.dto.ReportColumn" >
+		delete from hps_rpt_report_columns where report_id = #{reportId,jdbcType=DECIMAL}
+	</delete>
+	
+</mapper>

@@ -1,0 +1,246 @@
+<#-- 
+ * description: 员工信息界面
+ * version: 1.0 
+ * author:xing.gong@hand-china.com
+ * #{copyright}#
+ * 
+-->
+<#include "../include/head.html">
+<#include "../include/hps.html">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<body style="padding: 3px; overflow: hidden;">
+<form id="employForm"></form>
+<div id="d_um_002_grid" style="margin: 0; padding: 0"></div>
+<script src="${base.contextPath}/fnd/code?employType=HPS_ORG_EMPLOYEE_TYPE" type="text/javascript"></script>
+<script type="text/javascript">
+    $(function () {       
+    	window['employForm'] = $("#employForm").ligerForm({
+            fields     : [{
+                type    : 'text',
+                label   : '<@spring.message "hps.org.employee.name"/>',
+                
+                name    : 'employeeName',
+            
+            },{
+            	 type    : 'text',
+                 label   : '<@spring.message "hps.org.employee.code"/>',   
+                 
+                 name    : 'employeeNumber',
+                 newline : false
+            }],
+            buttons    : [{
+                text    : '<@spring.message "hap.query"/>',
+                disabled: false,
+                width   : 60,
+                click   : function () {
+                    Hap.gridQuery({
+                        form: employForm,
+                        grid: d_um_002_grid
+                    })
+                }
+            }, {
+                text    : '<@spring.message "hap.reset"/>',
+                disabled: false,
+                width   : 60,
+                click   : function () {
+                	employForm.reset();
+                }
+            }],
+            onEnterDown: function () {
+                this.options.buttons[0].click();
+            }
+        });
+    	
+    	
+    	
+    	
+        window['d_um_002_grid'] = $("#d_um_002_grid").ligerGrid({
+            unSetValidateAttr: false,
+            columns          : [{
+                display: '<@spring.message "hps.org.employee.type"/>',
+                name   : 'lookupCode',
+                align  : 'center',
+                width  : 100,
+                textField : 'meaning',
+                editor : {
+                	 type : 'select' ,
+ 	                valueField : 'lookupCode',
+ 	                textField : 'meaning',
+ 	              	data		: employType
+	            },	 
+	            validate : {
+					required : true
+				}
+               
+            }, {
+                display: '<@spring.message "hps.org.employee.code"/>',
+                name   : 'employeeNumber',
+                align  : 'center',
+                width  : 100,
+                editor : {
+                    type: 'text'
+                },
+                validate : {
+					required : true
+				}
+            },{
+            	
+                    display: '<@spring.message "hps.org.employee.name"/>',
+                    name   : 'employeeName',
+                    align  : 'center',
+                    width  : 100,
+                    editor : {
+                        type : 'tl',
+                        idField:'employeeId',
+                        dto:'hps.org.dto.Employee'
+                    },
+                    validate : {
+    					required : true
+    				}
+                
+            },{
+            	
+            	 display: '<@spring.message "hps.org.employee.email"/>',
+                 name   : 'email',
+                 align  : 'center',
+                 width  : 100,
+                 
+                 editor : {
+                     type: 'text'
+                 }
+            },{
+            	
+            	 display: '<@spring.message "hps.org.employee.mobilephone"/>',
+                 name   : 'mobilePhone',
+                 align  : 'center',
+                 width  : 100,
+                 editor : {
+                     type: 'text'
+                 }
+            },{
+            	
+            	 display: '<@spring.message "hps.org.employee.wechat"/>',
+                 name   : 'wechat',
+                 align  : 'center',
+                 width  : 100,
+                 editor : {
+                     type: 'text'
+                 }
+            },{
+            	
+            	 display: '<@spring.message "hps.org.employee.qq"/>',
+                 name   : 'qq',
+                 align  : 'center',
+                 width  : 100,
+                 editor : {
+                     type: 'text'
+                 }
+            },{
+            	
+            	 display: '<@spring.message "hps.org.employee.certificate"/>',
+                 name   : 'certificate',
+                 align  : 'center',
+                 width  : 130,
+                 editor : {
+                     type: 'text'
+                 }
+            },{
+            	
+            	display: '<@spring.message "hps.org.employee.comments"/>',
+                name   : 'comments',
+                align  : 'center',
+                width  : 100,
+                editor : {
+                    type : 'tl',
+                    idField:'employeeId',
+                    dto:'hps.org.dto.Employee'
+                }
+            },{
+            	
+            	display: '<@spring.message "hps.org.employee.bankName"/>',
+                name   : 'bankName',
+                align  : 'center',
+                width  : 100,
+                editor : {
+                    type : 'tl',
+                    idField:'employeeId',
+                    dto:'hps.org.dto.Employee'
+                }
+            },{
+            	
+            	display: '<@spring.message "hps.org.employee.bankaccountnum"/>',
+                name   : 'bankAccountNum',
+                align  : 'center',
+                width  : 100,
+                editor : {
+                    type: 'text'
+                }
+            },{
+            	
+            	display: '<@spring.message "hps.org.employee.enabledflag"/>',
+                name   : 'enabledFlag',
+                align  : 'center',
+                width  : 110,
+                render : Hap.createGridCheckBoxRender()
+            }],
+            url              : '${base.contextPath}/org/employees/query',
+            toolbar          : {
+                items: [{
+                    text   : '<@spring.message "hap.new"/>',
+                    disable: false,
+                    click  : function () {
+                    	d_um_002_grid.addRow({
+                    		enabledFlag:'Y'  //新建时默认启用为'Y'
+                    	})
+                    },
+                    icon   : 'add'
+                }, {
+                    line: true
+                },{
+                    text : '<@spring.message "hap.delete"/>',
+                    click: function () {
+                        Hap.gridDelete({
+                            grid: d_um_002_grid,
+                            url : '${base.contextPath}/org/employees/delete'
+                        })
+
+                    },
+                    icon : 'delete'
+                }, {
+                    line: true
+                }, {
+                    text : '<@spring.message "hap.save"/>',
+                    click: function () {
+                    	
+                        Hap.gridSave({
+                            grid: d_um_002_grid,
+                            url : '${base.contextPath}/org/employees/submit'
+                        })
+                    },
+                    icon : 'save'
+                },{
+                	text : '<@spring.message "hap.clean"/>',
+                    click: function () {
+                    		clearRow(d_um_002_grid);
+                    },
+                   icon : 'clear'
+                }]
+            },
+          	checkbox         :true,
+            enabledEdit      : true,
+            width            : '100%',
+            height           : '99%',
+            onBeforeEdit	:function(e){
+            	if(e.column.columnname=='employeeNumber')
+            		return e.record.__status=='add';
+            		return true;
+            }
+        });
+        
+       
+    });
+
+
+</script>
+</body>
+</html>

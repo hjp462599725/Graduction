@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="hps.alt.mapper.AlertInputMapper">
+	<resultMap type="hps.alt.dto.AlertInput" id="BaseResult">
+		<id column="ALERT_INPUT_ID" property="alertInputId" jdbcType="DECIMAL"/>
+		<result column="ALERT_ID" property="alertId" jdbcType="DECIMAL"/>
+		<result column="INPUT_NAME" property="inputName" jdbcType="VARCHAR"/>
+		<result column="INPUT_TITLE" property="inputTitle" jdbcType="VARCHAR"/>
+		<result column="INPUT_TYPE_CODE" property="inputTypeCode" jdbcType="VARCHAR"/>
+		<result column="DATA_TYPE_CODE" property="dataTypeCode" jdbcType="VARCHAR"/>
+		<result column="DEFAULT_VALUE" property="defaultValue" jdbcType="VARCHAR"/>
+		<result column="SQL_STATEMENT" property="sqlStatement" jdbcType="VARCHAR"/>
+	</resultMap>
+	
+	<sql id="Base_Column_List">
+		ALERT_INPUT_ID,ALERT_ID,INPUT_NAME,INPUT_TITLE,INPUT_TYPE_CODE,DATA_TYPE_CODE,DEFAULT_VALUE,SQL_STATEMENT
+	</sql>
+	
+	<select id="" resultMap="BaseResult" parameterType="hps.alt.dto.AlertInput">
+		select 
+			<include refid="Base_Column_List" /> 			
+		from 
+			HPS_ALT_ALERT_INPUT  
+		where 
+			ALERT_ID = #{alertId,javaType=java.lang.Long}
+		order by ALERT_INPUT_ID asc
+	</select>
+	
+	<insert id="insertAlertInputName" parameterType="hps.alt.dto.AlertInput">
+		<selectKey resultType="Long" keyProperty="alertInputId" order="BEFORE">
+			select HPS_ALT_ALERT_INPUT_S.nextVal from dual	
+		</selectKey>
+		INSERT INTO 
+			HPS_ALT_ALERT_INPUT(ALERT_INPUT_ID,ALERT_ID,INPUT_NAME)
+		VALUES
+			(#{alertInputId,javaType=java.lang.Long},#{alertId,javaType=java.lang.Long},#{inputName,javaType=java.lang.String})
+	</insert>
+	
+	<delete id="deleteAlertInputName" parameterType="java.lang.Long">
+		delete from HPS_ALT_ALERT_INPUT 
+		where ALERT_ID = #{alertId,javaType=java.lang.Long}
+	</delete>
+	
+	<update id="updateAltInput" parameterType="hps.alt.dto.AlertInput">
+		UPDATE HPS_ALT_ALERT_INPUT SET 
+		 INPUT_TITLE = #{inputTitle,javaType=java.lang.String}, 
+		 INPUT_TYPE_CODE = #{inputTypeCode,javaType=java.lang.String},		  
+		 DATA_TYPE_CODE = #{dataTypeCode,javaType=java.lang.String},
+		 DEFAULT_VALUE = #{defaultValue,javaType=java.lang.String}, 
+		 SQL_STATEMENT =  #{sqlStatement,javaType=java.lang.String}
+		WHERE 
+		 ALERT_INPUT_ID = #{alertInputId,javaType=java.lang.Long} 
+	</update>
+
+
+</mapper>
+
